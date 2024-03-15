@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: 2d24184b473abcc41bcd7c4bbf866fd8
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - spawnPoint: {fileID: 7041736505132211423, guid: abf95feb0c2151e4fa7e49892ebc1b57, type: 3}
+  - playerCameraPrefab: {fileID: 7339340220471245583, guid: d2f89f86c6109ce4dab7ea859cf81143, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
