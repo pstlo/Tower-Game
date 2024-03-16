@@ -1891,6 +1891,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69250a35edd2537448104a8b65c9a242, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  respawnPoint: {fileID: 1640614827}
   mainCamera: {fileID: 963194225}
   hostButton: {fileID: 2110781539}
   leaveButton: {fileID: 328473370}
@@ -2622,7 +2623,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: -0.00061035156}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &828883078
@@ -4675,6 +4676,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1571056144}
   m_CullTransparentMesh: 1
+--- !u!4 &1640614827 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7041736505132211423, guid: abf95feb0c2151e4fa7e49892ebc1b57, type: 3}
+  m_PrefabInstance: {fileID: 3094785895128895116}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1642510472
 GameObject:
   m_ObjectHideFlags: 0
@@ -6694,7 +6700,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7041736505132211423, guid: abf95feb0c2151e4fa7e49892ebc1b57, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.15
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7041736505132211423, guid: abf95feb0c2151e4fa7e49892ebc1b57, type: 3}
       propertyPath: m_LocalPosition.z
@@ -6841,6 +6847,10 @@ PrefabInstance:
     - target: {fileID: 6211052153613326126, guid: a2305a779640f7f4baea9213dea43e42, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6962788900200504049, guid: a2305a779640f7f4baea9213dea43e42, type: 3}
+      propertyPath: m_CollisionDetection
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

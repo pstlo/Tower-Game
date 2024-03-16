@@ -12,10 +12,10 @@ using Unity.Networking.Transport.Relay;
 using System.Collections.Generic;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
-using System;
 
 public class GameLobby : MonoBehaviour
 {
+    [SerializeField] private Transform respawnPoint;
     [SerializeField] private GameObject mainCamera;
     [SerializeField] private Button hostButton;
     [SerializeField] private Button leaveButton;
@@ -307,11 +307,20 @@ public class GameLobby : MonoBehaviour
     public void RespawnAllPlayers()
     {
         List<GameObject> activePlayerInstances = GetActivePlayerInstances();
+        float horizontalSpacing = 2.0f;
+        Vector3 currentPosition = respawnPoint.position;
+        Quaternion spawnRotation = respawnPoint.rotation;
 
         foreach (GameObject playerInstance in activePlayerInstances)
         {
             PlayerController playerController = playerInstance.GetComponent<PlayerController>();
-            if (playerController != null) {playerController.Respawn();}
+            if (playerController != null)
+            {
+                playerController.spawnPoint.position = currentPosition;
+                playerController.spawnPoint.rotation = spawnRotation;
+                currentPosition += Vector3.right * horizontalSpacing;
+                playerController.Respawn();
+            }
         }
     }
 
@@ -336,6 +345,6 @@ public class GameLobby : MonoBehaviour
     {
         RespawnAllPlayers();
         Debug.Log("Game started");
-        startGameUI.SetActive(false);
+        //startGameUI.SetActive(false);
     }
 }

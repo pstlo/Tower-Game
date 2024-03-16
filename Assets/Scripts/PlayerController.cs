@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class PlayerController : NetworkBehaviour
 {    
-    [SerializeField] private Transform spawnPoint;
+    [SerializeField] public Transform spawnPoint;
     [SerializeField] private float moveSpeed = 10f; 
     [SerializeField] private float jumpForce = 5f; 
 
@@ -20,6 +20,9 @@ public class PlayerController : NetworkBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        rb.isKinematic = false;
+        NetworkObject.DestroyWithScene = true;
+
         if (IsLocalPlayer)
         {
             GameObject newCamera = Instantiate(playerCameraPrefab, transform.position, Quaternion.identity);
@@ -30,7 +33,6 @@ public class PlayerController : NetworkBehaviour
                 newPlayerCamera.player = transform;
                 playerCamera = newPlayerCamera;
             }
-            
 
             Respawn();
             
@@ -54,24 +56,7 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    public void Respawn()
-    {
-    if (spawnPoint != null)
-        {
-            transform.position = spawnPoint.position;
-            transform.rotation = spawnPoint.rotation;
-        }
-    }
 
-    void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            isGrounded = true; 
-        }
-    }
-
-    // Update is called once per frame
     void FixedUpdate()
     {
         if (!IsOwner) return;
@@ -97,15 +82,31 @@ public class PlayerController : NetworkBehaviour
             rb.MovePosition(rb.position + movement);
 
             
-            if (rb.position.y < -5f)
-            {
-                rb.velocity = Vector3.zero;
-                rb.angularVelocity = Vector3.zero;
-                rb.position = spawnPoint.position;
-                rb.rotation = spawnPoint.rotation;
-            }
+            if (rb.position.y < -5f) {Respawn();}
         }
     }
+
+
+    public void Respawn()
+    {
+        if (spawnPoint != null)
+        {
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            transform.position = spawnPoint.position;
+            transform.rotation = spawnPoint.rotation;
+        }
+    }
+
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            isGrounded = true; 
+        }
+    }
+
 
     private void SetPauseMenuActive(bool active)
     {
