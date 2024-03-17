@@ -149,7 +149,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 2103378795
+  GlobalObjectIdHash: 4286597678
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -171,9 +171,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spawnPoint: {fileID: 7041736505132211423, guid: abf95feb0c2151e4fa7e49892ebc1b57, type: 3}
+  playerCameraPrefab: {fileID: 7339340220471245583, guid: d2f89f86c6109ce4dab7ea859cf81143, type: 3}
+  playerNamePrefab: {fileID: 7773130603081553153, guid: 327278023e0c06746bf4601a7099e8ab, type: 3}
   moveSpeed: 10
   jumpForce: 5
-  playerCameraPrefab: {fileID: 7339340220471245583, guid: d2f89f86c6109ce4dab7ea859cf81143, type: 3}
 --- !u!114 &-2721857177959415647
 MonoBehaviour:
   m_ObjectHideFlags: 0
