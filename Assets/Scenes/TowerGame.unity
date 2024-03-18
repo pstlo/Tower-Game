@@ -1227,7 +1227,7 @@ MonoBehaviour:
     PlayerPrefab: {fileID: 3288098732901890965, guid: 5d34fc417d1d83444bdd1b0e47cad7f9, type: 3}
     Prefabs:
       NetworkPrefabsLists:
-      - {fileID: 11400000, guid: af002f144fde38b489e674ba1d33b377, type: 2}
+      - {fileID: 11400000, guid: f69502c64bb80cb429dc0999c6a4dfa4, type: 2}
     TickRate: 30
     ClientConnectionBufferTimeout: 10
     ConnectionApproval: 0
@@ -1910,6 +1910,7 @@ MonoBehaviour:
   maxPlayersField: {fileID: 1919398915}
   isPrivateField: {fileID: 2073786024}
   joinCodeText: {fileID: 2110837979}
+  playerName: 
 --- !u!114 &482779967
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2623,7 +2624,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.00061035156}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &828883078
@@ -2753,7 +2754,7 @@ GameObject:
   - component: {fileID: 846041490}
   - component: {fileID: 846041489}
   m_Layer: 5
-  m_Name: Console
+  m_Name: ConsoleOutput
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2776,8 +2777,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -496.2, y: 241.2}
-  m_SizeDelta: {x: -1191.5957, y: -538.2888}
+  m_AnchoredPosition: {x: -496.19995, y: 220.98961}
+  m_SizeDelta: {x: -1191.5957, y: -497.868}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &846041485
 MonoBehaviour:
@@ -5986,7 +5987,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Change Name
+  m_text: '
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

@@ -44,7 +44,7 @@ public class GameLobby : MonoBehaviour
     private float refreshLobbyListTimer = 5f;
     private float heartBeatTimer;
     private float updateTimer;
-    private string playerName;
+    public string playerName;
 
 
     private async void Start()
@@ -76,16 +76,20 @@ public class GameLobby : MonoBehaviour
         HandleLobbyPolling();
     }
 
-    public async void Authenticate(string playerName) {
-        this.playerName = playerName;
+    public async void Authenticate(string playerName) 
+    {
+        /*EVENTUALLY
         InitializationOptions initializationOptions = new InitializationOptions();
         initializationOptions.SetProfile(playerName);
-        await UnityServices.InitializeAsync(initializationOptions);
+        await UnityServices.InitializeAsync(initializationOptions);*/
+
+        this.playerName = playerName;
         AuthenticationService.Instance.SignedIn += () => {
-            Debug.Log("Signed in " + playerName + " " + AuthenticationService.Instance.PlayerId);
+            Debug.Log("Signed in " + playerName + ", ID " + AuthenticationService.Instance.PlayerId);
             RefreshLobbyList();
         };
         await AuthenticationService.Instance.SignInAnonymouslyAsync();
+        await AuthenticationService.Instance.UpdatePlayerNameAsync(playerName);
         authenticateUI.SetActive(false);
         networkUI.SetActive(true);
     }
@@ -96,7 +100,7 @@ public class GameLobby : MonoBehaviour
         {
             Allocation allocation = await RelayService.Instance.CreateAllocationAsync(3);
             string relayCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
-            Debug.Log("Relay code: " + relayCode);
+            //Debug.Log("Relay code: " + relayCode);
             networkUI.SetActive(false);
             RelayServerData relayServerData = new RelayServerData(allocation, "dtls");
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
@@ -151,7 +155,6 @@ public class GameLobby : MonoBehaviour
         }
         catch (LobbyServiceException e) { Debug.Log(e); }
     }
-
     
      public async void JoinLobbyByCode(string lobbyCode) 
      {
@@ -159,7 +162,6 @@ public class GameLobby : MonoBehaviour
         Lobby lobby = await LobbyService.Instance.JoinLobbyByCodeAsync(lobbyCode, new JoinLobbyByCodeOptions {Player = player});
         joinedLobby = lobby;
         JoinRelay(joinedLobby.Data[KEY_RELAY_CODE].Value);
-                
     }
 
     public async void QuickJoinLobby() 
@@ -180,8 +182,6 @@ public class GameLobby : MonoBehaviour
                 Debug.Log("Leaving lobby");
                 if (IsLobbyHost()) {startGameUI.SetActive(false);}
                 await LobbyService.Instance.RemovePlayerAsync(joinedLobby.Id, AuthenticationService.Instance.PlayerId);
-                joinedLobby = null;
-                mainCamera.SetActive(true);
                 NetworkManager.Singleton.Shutdown();
             } 
             catch (LobbyServiceException e) {Debug.Log(e);}
@@ -190,8 +190,9 @@ public class GameLobby : MonoBehaviour
 
         joinCodeText.gameObject.SetActive(false);
         networkUI.gameObject.SetActive(true);
-        PauseMenuManager.Instance.TogglePauseMenu(false);
-        
+        PauseMenuManager.Instance.TogglePauseMenu(false); 
+        mainCamera.SetActive(true);
+        joinedLobby = null;
     }   
 
     private void DisplayJoinCode(string joinCode)
@@ -202,7 +203,13 @@ public class GameLobby : MonoBehaviour
 
     public async void UpdatePlayerName(string playerName) 
     {   
-        this.playerName = playerName;
+        try {
+            this.playerName = playerName;
+            await AuthenticationService.Instance.UpdatePlayerNameAsync(playerName);
+            Debug.Log("Changed player name to " + playerName);}
+        catch (AuthenticationException e) {Debug.Log(e);}
+
+        /* EVENTUALLY
         if (joinedLobby != null) {
             try {
                 UpdatePlayerOptions options = new UpdatePlayerOptions();
@@ -216,10 +223,10 @@ public class GameLobby : MonoBehaviour
                 string playerId = AuthenticationService.Instance.PlayerId;
                 Lobby lobby = await LobbyService.Instance.UpdatePlayerAsync(joinedLobby.Id, playerId, options);
                 joinedLobby = lobby;
-                Debug.Log("Changed player name to " + playerName);
+                
             } 
             catch (LobbyServiceException e) {Debug.Log(e);}
-        }
+        }*/
     }
 
     private Player GetPlayer()
@@ -319,7 +326,8 @@ public class GameLobby : MonoBehaviour
                 playerController.spawnPoint.position = currentPosition;
                 playerController.spawnPoint.rotation = spawnRotation;
                 currentPosition += Vector3.right * horizontalSpacing;
-                playerController.Respawn();
+                if (playerController.GetComponent<NetworkObject>().IsOwnedByServer) {playerController.Respawn();}
+                else {playerController.RespawnRpc();}
             }
         }
     }
@@ -331,12 +339,8 @@ public class GameLobby : MonoBehaviour
 
         foreach (GameObject player in players)
         {
-            if (player.activeSelf)
-            {
-                activePlayerInstances.Add(player);
-            }
+            if (player.activeSelf) {activePlayerInstances.Add(player);}
         }
-
         return activePlayerInstances;
     }
 
@@ -345,6 +349,6 @@ public class GameLobby : MonoBehaviour
     {
         RespawnAllPlayers();
         Debug.Log("Game started");
-        //startGameUI.SetActive(false);
+        startGameUI.SetActive(false);
     }
 }

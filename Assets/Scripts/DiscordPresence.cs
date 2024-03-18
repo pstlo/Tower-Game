@@ -22,8 +22,5 @@ public class DiscordPresence : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        discord.RunCallbacks();
-    }
+    void Update() {discord.RunCallbacks();}
 }
