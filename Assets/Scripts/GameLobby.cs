@@ -12,6 +12,7 @@ using Unity.Networking.Transport.Relay;
 using System.Collections.Generic;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
+using UnityEditor;
 
 public class GameLobby : MonoBehaviour
 {
@@ -77,13 +78,12 @@ public class GameLobby : MonoBehaviour
     }
 
     public async void Authenticate(string playerName) 
-    {
-        /*EVENTUALLY
+    {   
+        this.playerName = playerName;
         InitializationOptions initializationOptions = new InitializationOptions();
         initializationOptions.SetProfile(playerName);
-        await UnityServices.InitializeAsync(initializationOptions);*/
+        await UnityServices.InitializeAsync(initializationOptions);
 
-        this.playerName = playerName;
         AuthenticationService.Instance.SignedIn += () => {
             Debug.Log("Signed in " + playerName + ", ID " + AuthenticationService.Instance.PlayerId);
             RefreshLobbyList();
@@ -206,10 +206,10 @@ public class GameLobby : MonoBehaviour
         try {
             this.playerName = playerName;
             await AuthenticationService.Instance.UpdatePlayerNameAsync(playerName);
-            Debug.Log("Changed player name to " + playerName);}
+            Debug.Log("Changed player name to " + playerName);
+        }
         catch (AuthenticationException e) {Debug.Log(e);}
 
-        /* EVENTUALLY
         if (joinedLobby != null) {
             try {
                 UpdatePlayerOptions options = new UpdatePlayerOptions();
@@ -226,7 +226,7 @@ public class GameLobby : MonoBehaviour
                 
             } 
             catch (LobbyServiceException e) {Debug.Log(e);}
-        }*/
+        }
     }
 
     private Player GetPlayer()
@@ -301,8 +301,10 @@ public class GameLobby : MonoBehaviour
 
 
     private bool IsPlayerInLobby() {
-        if (joinedLobby != null && joinedLobby.Players != null) {
-            foreach (Player player in joinedLobby.Players) {
+        if (joinedLobby != null && joinedLobby.Players != null) 
+        {
+            foreach (Player player in joinedLobby.Players) 
+            {
                 if (player.Id == AuthenticationService.Instance.PlayerId) {return true;}
             }
         }
@@ -311,16 +313,15 @@ public class GameLobby : MonoBehaviour
     
     private bool IsLobbyHost() {return joinedLobby != null && joinedLobby.HostId == AuthenticationService.Instance.PlayerId;}
     
-    public void RespawnAllPlayers()
+    public void RespawnAllPlayers(GameObject[] players)
     {
-        List<GameObject> activePlayerInstances = GetActivePlayerInstances();
         float horizontalSpacing = 2.0f;
         Vector3 currentPosition = respawnPoint.position;
         Quaternion spawnRotation = respawnPoint.rotation;
 
-        foreach (GameObject playerInstance in activePlayerInstances)
+        foreach (GameObject player in players)
         {
-            PlayerController playerController = playerInstance.GetComponent<PlayerController>();
+            PlayerController playerController = player.GetComponent<PlayerController>();
             if (playerController != null)
             {
                 playerController.spawnPoint.position = currentPosition;
@@ -332,23 +333,26 @@ public class GameLobby : MonoBehaviour
         }
     }
 
-    private List<GameObject> GetActivePlayerInstances()
+    private void UpdatePlayerNames(GameObject[] players)
     {
-        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
-        List<GameObject> activePlayerInstances = new List<GameObject>();
-
         foreach (GameObject player in players)
         {
-            if (player.activeSelf) {activePlayerInstances.Add(player);}
+            PlayerController controller = player.GetComponent<PlayerController>();
+            controller.UpdateName();
+            //controller.UpdateName(controller.GetName());
         }
-        return activePlayerInstances;
     }
 
+    private GameObject[] GetPlayers() {return GameObject.FindGameObjectsWithTag("Player");}
 
     private void StartGame()
     {
-        RespawnAllPlayers();
-        Debug.Log("Game started");
+        GameObject[] players = GetPlayers();
+        UpdatePlayerNames(players);
+        RespawnAllPlayers(players);
         startGameUI.SetActive(false);
+        Debug.Log("Game started");
     }
+
+    
 }

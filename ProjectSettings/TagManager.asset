@@ -6,7 +6,6 @@ TagManager:
   tags:
   - PlayerCamera
   - Ground
-  - PauseMenu
   layers:
   - Default
   - TransparentFX

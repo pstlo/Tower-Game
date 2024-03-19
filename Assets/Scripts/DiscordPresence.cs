@@ -3,10 +3,12 @@ using UnityEngine;
 public class DiscordPresence : MonoBehaviour
 {
     public Discord.Discord discord;
-
+    bool EnableDiscordPresence = false;
+    
     // Start is called before the first frame update
     void Start()
     {
+        if (!EnableDiscordPresence) {return;}
         discord = new Discord.Discord(1218098385089990666, (System.UInt64)Discord.CreateFlags.Default);
         var activityManager = discord.GetActivityManager();
         var activity = new Discord.Activity{
@@ -22,5 +24,5 @@ public class DiscordPresence : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update() {discord.RunCallbacks();}
+    void Update() {if (EnableDiscordPresence){discord.RunCallbacks();}}
 }

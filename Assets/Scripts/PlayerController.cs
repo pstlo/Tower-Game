@@ -41,6 +41,7 @@ public class PlayerController : NetworkBehaviour
 
             playerNameText.text = playerName;
             playerNameText.transform.localPosition = Vector3.up * playerNameOffset;
+            UpdateNameTextRpc(playerName);
             Respawn();
         }
     }
@@ -95,7 +96,7 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-     private void HandleDisconnect(ulong clientId)
+    private void HandleDisconnect(ulong clientId)
     {
         if (clientId == OwnerClientId) {Leave();}
     }
@@ -117,6 +118,23 @@ public class PlayerController : NetworkBehaviour
     void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Ground")) {isGrounded = true;}
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void UpdateNameTextRpc(string name) {playerNameText.text = name; }
+
+    public string GetName() {return playerName;}
+
+    private void SetName(string name) {playerName = name;}
+
+    public void UpdateName()
+    {
+        if (IsLocalPlayer)
+        {
+            string name = GameLobby.Instance.playerName;
+            SetName(name);
+            UpdateNameTextRpc(name);
+        }
     }
 
 
