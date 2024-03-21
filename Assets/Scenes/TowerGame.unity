@@ -1781,8 +1781,9 @@ GameObject:
   - component: {fileID: 482779964}
   - component: {fileID: 482779963}
   - component: {fileID: 482779962}
+  - component: {fileID: 482779969}
+  - component: {fileID: 482779970}
   - component: {fileID: 482779966}
-  - component: {fileID: 482779967}
   - component: {fileID: 482779968}
   m_Layer: 5
   m_Name: Menu
@@ -1893,38 +1894,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   respawnPoint: {fileID: 1640614827}
   mainCamera: {fileID: 963194225}
-  hostButton: {fileID: 2110781539}
-  leaveButton: {fileID: 328473370}
-  networkUI: {fileID: 1833003692}
-  startGameUI: {fileID: 338284848}
-  startGameButton: {fileID: 867266917}
-  authenticateUI: {fileID: 326006200}
-  clientButton: {fileID: 1370971941}
-  quickJoinButton: {fileID: 960257212}
-  joinCodeInputField: {fileID: 1296817086}
-  authenticateButton: {fileID: 734138123}
-  enterUsernameField: {fileID: 232478126}
-  changePlayerNameButton: {fileID: 1727175055}
-  playerNameField: {fileID: 782738911}
-  lobbyNameField: {fileID: 252495636}
-  maxPlayersField: {fileID: 1919398915}
-  isPrivateField: {fileID: 2073786024}
-  joinCodeText: {fileID: 2110837979}
   playerName: 
   gameStarted: 0
---- !u!114 &482779967
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 482779961}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 28ec8f26544a61649b66dd702e88d2aa, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  pauseMenuUI: {fileID: 1385776486}
 --- !u!114 &482779968
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1941,6 +1912,57 @@ MonoBehaviour:
   logText: {fileID: 828883078}
   consoleRectTransform: {fileID: 846041483}
   scrollRect: {fileID: 910224674}
+--- !u!114 &482779969
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 482779961}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 2038126303
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+--- !u!114 &482779970
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 482779961}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c28ea1709f41d64c8972c40d721f637, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  authenticateUI: {fileID: 326006200}
+  authenticateButton: {fileID: 734138123}
+  enterUsernameField: {fileID: 232478126}
+  networkUI: {fileID: 1833003692}
+  hostButton: {fileID: 2110781539}
+  lobbyNameField: {fileID: 252495636}
+  maxPlayersField: {fileID: 1919398915}
+  isPrivateField: {fileID: 2073786024}
+  clientButton: {fileID: 1370971941}
+  joinCodeInputField: {fileID: 1296817086}
+  quickJoinButton: {fileID: 960257212}
+  pauseMenuUI: {fileID: 1385776486}
+  changePlayerNameButton: {fileID: 1727175055}
+  changePlayerNameField: {fileID: 782738911}
+  leaveButton: {fileID: 328473370}
+  startGameUI: {fileID: 338284848}
+  startGameButton: {fileID: 867266917}
+  joinCodeText: {fileID: 2110837979}
 --- !u!1 &567425201
 GameObject:
   m_ObjectHideFlags: 0
@@ -5800,6 +5822,37 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1935399356}
   m_CullTransparentMesh: 1
+--- !u!1 &1959472403
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1959472404}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1959472404
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1959472403}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2015478698
 GameObject:
   m_ObjectHideFlags: 0
@@ -7609,6 +7662,7 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 267185049}
+  - {fileID: 1959472404}
   - {fileID: 1241625016}
   - {fileID: 1081580636}
   - {fileID: 705507995}

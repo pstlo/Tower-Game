@@ -1,10 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
-using Unity.Services.Authentication;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class PlayerController : NetworkBehaviour
 {    
@@ -140,13 +136,16 @@ public class PlayerController : NetworkBehaviour
 
     private void SetPauseMenuActive(bool active)
     {
-        if (PauseMenuManager.Instance != null) {PauseMenuManager.Instance.TogglePauseMenu(active);}
+        UIManager.Instance.TogglePauseUI(active);
     }
 
     public void Leave()
     {
-        GameLobby.Instance.LeaveLobby();
-        Destroy(playerCamera);
-        Destroy(gameObject);
+        if (IsLocalPlayer)
+        {
+            GameLobby.Instance.LeaveLobby();
+            Destroy(playerCamera);
+            Destroy(gameObject);
+        }
     }
 }

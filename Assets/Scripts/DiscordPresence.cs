@@ -3,7 +3,7 @@ using UnityEngine;
 public class DiscordPresence : MonoBehaviour
 {
     public Discord.Discord discord;
-    bool EnableDiscordPresence = false;
+    [SerializeField] private bool EnableDiscordPresence = false;
     
     void Start()
     {

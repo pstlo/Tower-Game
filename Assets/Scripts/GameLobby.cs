@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.UI;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using Unity.Services.Authentication;
@@ -7,37 +6,17 @@ using Unity.Services.Core;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using System.Threading.Tasks;
-using TMPro;
 using Unity.Networking.Transport.Relay;
 using System.Collections.Generic;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
-using UnityEditor;
 
-public class GameLobby : NetworkBehaviour
+public class GameLobby : MonoBehaviour
 {
+    public static GameLobby Instance { get; private set; }
+
     [SerializeField] private Transform respawnPoint;
     [SerializeField] private GameObject mainCamera;
-    [SerializeField] private Button hostButton;
-    [SerializeField] private Button leaveButton;
-    [SerializeField] private GameObject networkUI;
-    [SerializeField] private GameObject startGameUI;
-    [SerializeField] private Button startGameButton;
-    [SerializeField] private GameObject authenticateUI;
-    [SerializeField] private Button clientButton;
-    [SerializeField] private Button quickJoinButton;
-    [SerializeField] private TMP_InputField joinCodeInputField;
-    [SerializeField] private Button authenticateButton;
-    [SerializeField] private TMP_InputField enterUsernameField;
-    [SerializeField] private Button changePlayerNameButton;
-    [SerializeField] private TMP_InputField playerNameField;
-    [SerializeField] private TMP_InputField lobbyNameField;
-    [SerializeField] private TMP_InputField maxPlayersField;
-    [SerializeField] private Toggle isPrivateField;
-    [SerializeField] private TMP_Text joinCodeText;
-
-
-    public static GameLobby Instance { get; private set; }
     private const string KEY_RELAY_CODE = "RelayCode";
     public const string KEY_PLAYER_NAME = "PlayerName";
     private Lobby hostLobby;
@@ -46,30 +25,13 @@ public class GameLobby : NetworkBehaviour
     private float heartBeatTimer;
     private float updateTimer;
     public string playerName;
-    
+
     public bool gameStarted;
     
     private async void Start()
     {
         Instance = this;
         await UnityServices.InitializeAsync();
-
-        authenticateButton.onClick.AddListener(() => Authenticate(enterUsernameField.text == "" ? "DefaultUserName" : enterUsernameField.text));
-        hostButton.onClick.AddListener(() => CreateLobby(
-            lobbyNameField.text == "" ? "DefaultLobbyName" : lobbyNameField.text, 
-            maxPlayersField.text == "" ? 4 : int.Parse(maxPlayersField.text), 
-            isPrivateField.isOn));
-        clientButton.onClick.AddListener(() => JoinLobbyByCode(joinCodeInputField.text));
-        quickJoinButton.onClick.AddListener(QuickJoinLobby);
-        leaveButton.onClick.AddListener(LeaveLobby);
-        startGameButton.onClick.AddListener(StartGame);
-        changePlayerNameButton.onClick.AddListener(() => UpdatePlayerName(playerNameField.text));
-
-        joinCodeText.gameObject.SetActive(false);
-        networkUI.gameObject.SetActive(false);
-        authenticateUI.SetActive(true);
-        startGameUI.SetActive(false);
-        if (PauseMenuManager.Instance != null) {PauseMenuManager.Instance.TogglePauseMenu(false);}
     }
 
     private void Update() 
@@ -92,8 +54,8 @@ public class GameLobby : NetworkBehaviour
         };
         await AuthenticationService.Instance.SignInAnonymouslyAsync();
         await AuthenticationService.Instance.UpdatePlayerNameAsync(playerName);
-        authenticateUI.SetActive(false);
-        networkUI.SetActive(true);
+        UIManager.Instance.ToggleAuthenticateUI(false);
+        UIManager.Instance.ToggleNetworkUI(true);
     }
 
     private async Task<string> CreateRelay()
@@ -102,8 +64,7 @@ public class GameLobby : NetworkBehaviour
         {
             Allocation allocation = await RelayService.Instance.CreateAllocationAsync(3);
             string relayCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
-            //Debug.Log("Relay code: " + relayCode);
-            networkUI.SetActive(false);
+            UIManager.Instance.ToggleNetworkUI(false);
             RelayServerData relayServerData = new RelayServerData(allocation, "dtls");
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
             NetworkManager.Singleton.StartHost();
@@ -128,7 +89,7 @@ public class GameLobby : NetworkBehaviour
                 RelayServerData relayServerData = new RelayServerData(joinAllocation, "dtls");
                 NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
                 NetworkManager.Singleton.StartClient();
-                networkUI.SetActive(false);
+                UIManager.Instance.ToggleNetworkUI(false);
             }
             else {Debug.LogError("Invalid relay: " + relayCode);}
         }
@@ -152,8 +113,9 @@ public class GameLobby : NetworkBehaviour
             joinedLobby = hostLobby;            
             string lobbyCode = lobby.LobbyCode;
             Debug.Log("Created " + lobbyName + " for " + maxPlayers + " players. " + lobby.Id + " " + lobbyCode);
-            DisplayJoinCode(lobbyCode);
-            startGameUI.SetActive(true);
+            UIManager.Instance.SetJoinCode(lobbyCode);
+            UIManager.Instance.ToggleJoinCode(true);
+            UIManager.Instance.ToggleStartUI(true);
         }
         catch (LobbyServiceException e) { Debug.Log(e); }
     }
@@ -182,7 +144,7 @@ public class GameLobby : NetworkBehaviour
         if (joinedLobby != null) {
             try {
                 Debug.Log("Leaving lobby");
-                if (IsLobbyHost()) {startGameUI.SetActive(false);}
+                if (IsLobbyHost()) {UIManager.Instance.ToggleStartUI(false);}
                 await LobbyService.Instance.RemovePlayerAsync(joinedLobby.Id, AuthenticationService.Instance.PlayerId);
                 NetworkManager.Singleton.Shutdown();
             } 
@@ -190,18 +152,13 @@ public class GameLobby : NetworkBehaviour
         }
         else {Debug.Log("Lobby is null");}
 
-        joinCodeText.gameObject.SetActive(false);
-        networkUI.gameObject.SetActive(true);
-        PauseMenuManager.Instance.TogglePauseMenu(false); 
+        UIManager.Instance.ToggleJoinCode(false);
+        UIManager.Instance.ToggleNetworkUI(true);
+        UIManager.Instance.TogglePauseUI(false);
         mainCamera.SetActive(true);
         joinedLobby = null;
     }   
 
-    private void DisplayJoinCode(string joinCode)
-    {
-        joinCodeText.text = joinCode;
-        joinCodeText.gameObject.SetActive(true);
-    }
 
     public async void UpdatePlayerName(string playerName) 
     {   
@@ -347,12 +304,12 @@ public class GameLobby : NetworkBehaviour
     private GameObject[] GetPlayers() {return GameObject.FindGameObjectsWithTag("Player");}
 
 
-    private void StartGame()
+    public void StartGame()
     {
         GameObject[] players = GetPlayers();
         UpdatePlayerNames(players);
         RespawnAllPlayers(players);
-        startGameUI.SetActive(false);
+        UIManager.Instance.ToggleStartUI(false);
 
         // Start animation / countdown?
 
