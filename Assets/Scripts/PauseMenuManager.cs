@@ -7,18 +7,9 @@ public class PauseMenuManager : MonoBehaviour
 
     [SerializeField] private GameObject pauseMenuUI;
 
-    private void Awake()
-    {
-        Instance = this;
-    }
+    private void Awake() {Instance = this;}
 
-    public void TogglePauseMenu(bool active)
-    {
-        if (pauseMenuUI != null)
-        {
-            pauseMenuUI.SetActive(active); // Activate or deactivate the pause menu UI
-        }
-    }
+    public void TogglePauseMenu(bool active) {pauseMenuUI.SetActive(active);}
 
     
 }

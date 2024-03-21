@@ -10,7 +10,7 @@ public class ConsoleOutput : MonoBehaviour, IDragHandler, IPointerDownHandler
     [SerializeField] private RectTransform consoleRectTransform;
     [SerializeField] private ScrollRect scrollRect;
 
-    private Vector2 lastPointerPosition;
+    private Vector2 pos;
     private bool consoleVisible = false;
 
     void Start()
@@ -30,12 +30,12 @@ public class ConsoleOutput : MonoBehaviour, IDragHandler, IPointerDownHandler
 
     public void OnDrag(PointerEventData eventData)
     {
-        Vector2 delta = eventData.position - lastPointerPosition;
+        Vector2 delta = eventData.position - pos;
         consoleRectTransform.anchoredPosition += delta;
-        lastPointerPosition = eventData.position;
+        pos = eventData.position;
     }
 
-    public void OnPointerDown(PointerEventData eventData) {lastPointerPosition = eventData.position;}
+    public void OnPointerDown(PointerEventData eventData) {pos = eventData.position;}
 
     void OnDestroy() {Application.logMessageReceived -= HandleLog;}
 

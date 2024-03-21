@@ -5,7 +5,7 @@ using UnityEngine;
 public class Staircase : MonoBehaviour
 {
     [SerializeField] private GameObject stepPrefab;
-    [SerializeField] private int numStairs;
+    [SerializeField] private int numStairs; // 370 
 
     void Start()
     {
@@ -23,9 +23,5 @@ public class Staircase : MonoBehaviour
             GameObject step = Instantiate(stepPrefab, pos, rot);
         }
     }
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+
 }

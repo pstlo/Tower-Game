@@ -339,7 +339,6 @@ public class GameLobby : MonoBehaviour
         {
             PlayerController controller = player.GetComponent<PlayerController>();
             controller.UpdateName();
-            //controller.UpdateName(controller.GetName());
         }
     }
 

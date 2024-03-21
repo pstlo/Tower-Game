@@ -5,7 +5,6 @@ public class DiscordPresence : MonoBehaviour
     public Discord.Discord discord;
     bool EnableDiscordPresence = false;
     
-    // Start is called before the first frame update
     void Start()
     {
         if (!EnableDiscordPresence) {return;}
@@ -23,6 +22,5 @@ public class DiscordPresence : MonoBehaviour
         });
     }
 
-    // Update is called once per frame
     void Update() {if (EnableDiscordPresence){discord.RunCallbacks();}}
 }

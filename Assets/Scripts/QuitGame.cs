@@ -4,16 +4,11 @@ using UnityEngine;
 using UnityEngine.UI;
 
 
-
 public class QuitGame : MonoBehaviour
 {
-
     [SerializeField] private Button quitButton;
 
-    void Start()
-    {
-        quitButton.onClick.AddListener(Quit);
-    }
+    void Start() {quitButton.onClick.AddListener(Quit);}
 
     public void Quit()
     {
