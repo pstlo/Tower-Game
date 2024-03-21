@@ -68,7 +68,7 @@ public class PlayerController : NetworkBehaviour
 
     void FixedUpdate()
     {
-        if (!IsOwner) return;
+        if (!IsOwner) {return;}
 
         if (gameObject == null) 
         {
@@ -78,7 +78,7 @@ public class PlayerController : NetworkBehaviour
             return;
         }
 
-        if (!isPaused)
+        if (!isPaused) // && GameLobby.Instance.gameStarted)
         {
             float horizontalInput = Input.GetAxis("Horizontal");
             float verticalInput = Input.GetAxis("Vertical");

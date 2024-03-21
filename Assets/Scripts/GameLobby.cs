@@ -14,7 +14,7 @@ using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEditor;
 
-public class GameLobby : MonoBehaviour
+public class GameLobby : NetworkBehaviour
 {
     [SerializeField] private Transform respawnPoint;
     [SerializeField] private GameObject mainCamera;
@@ -46,23 +46,25 @@ public class GameLobby : MonoBehaviour
     private float heartBeatTimer;
     private float updateTimer;
     public string playerName;
-
-
+    
+    public bool gameStarted;
+    
     private async void Start()
     {
         Instance = this;
         await UnityServices.InitializeAsync();
+
         authenticateButton.onClick.AddListener(() => Authenticate(enterUsernameField.text == "" ? "DefaultUserName" : enterUsernameField.text));
         hostButton.onClick.AddListener(() => CreateLobby(
             lobbyNameField.text == "" ? "DefaultLobbyName" : lobbyNameField.text, 
             maxPlayersField.text == "" ? 4 : int.Parse(maxPlayersField.text), 
-            isPrivateField.isOn)
-        );
+            isPrivateField.isOn));
         clientButton.onClick.AddListener(() => JoinLobbyByCode(joinCodeInputField.text));
         quickJoinButton.onClick.AddListener(QuickJoinLobby);
         leaveButton.onClick.AddListener(LeaveLobby);
         startGameButton.onClick.AddListener(StartGame);
         changePlayerNameButton.onClick.AddListener(() => UpdatePlayerName(playerNameField.text));
+
         joinCodeText.gameObject.SetActive(false);
         networkUI.gameObject.SetActive(false);
         authenticateUI.SetActive(true);
@@ -344,12 +346,17 @@ public class GameLobby : MonoBehaviour
 
     private GameObject[] GetPlayers() {return GameObject.FindGameObjectsWithTag("Player");}
 
+
     private void StartGame()
     {
         GameObject[] players = GetPlayers();
         UpdatePlayerNames(players);
         RespawnAllPlayers(players);
         startGameUI.SetActive(false);
+
+        // Start animation / countdown?
+
+        gameStarted = true; // need to sync var
         Debug.Log("Game started");
     }
 
