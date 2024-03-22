@@ -9,7 +9,8 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private TMP_Text playerNameText;
     [SerializeField] private float moveSpeed = 10f; 
     [SerializeField] private float jumpForce = 5f; 
-    [SerializeField] private A
+    
+    
     private Rigidbody rb; 
     private PlayerCamera playerCamera;
     
@@ -17,6 +18,7 @@ public class PlayerController : NetworkBehaviour
     private float playerNameOffset = 1.5f;
     private bool isPaused = false;
     private bool isGrounded = true; 
+
 
     void Start()
     {
@@ -65,9 +67,9 @@ public class PlayerController : NetworkBehaviour
 
     void FixedUpdate()
     {
-        if (!IsOwner) {return;}
+        if (!IsOwner) { return; }
 
-        if (gameObject == null) 
+        if (gameObject == null)
         {
             Destroy(gameObject);
             Destroy(playerCamera);
@@ -89,9 +91,11 @@ public class PlayerController : NetworkBehaviour
             Vector3 movement = movementDirection * moveSpeed * Time.deltaTime;
             rb.MovePosition(rb.position + movement);
 
+            if (movementDirection != Vector3.zero) {transform.rotation = Quaternion.LookRotation(movementDirection);}
             if (rb.position.y < -5f) {Respawn();}
         }
     }
+
 
     private void HandleDisconnect(ulong clientId) {if (clientId == OwnerClientId) {Leave();}}
 

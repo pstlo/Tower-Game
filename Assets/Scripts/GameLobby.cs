@@ -144,14 +144,16 @@ public class GameLobby : MonoBehaviour
         catch (LobbyServiceException e) {Debug.Log(e);}
     }
     
-    public async void LeaveLobby() {
+    public async void LeaveLobby() 
+    {
         if (joinedLobby != null) 
         {
-            try {
+            try 
+            {
                 Debug.Log("Leaving lobby");
                 if (IsLobbyHost()) {GameManager.Instance.EndGame();}
                 await LobbyService.Instance.RemovePlayerAsync(joinedLobby.Id, AuthenticationService.Instance.PlayerId);
-                NetworkManager.Singleton.Shutdown();
+                if (NetworkManager.Singleton != null) {NetworkManager.Singleton.Shutdown();}
             } 
             catch (LobbyServiceException e) {Debug.Log(e);}
         }

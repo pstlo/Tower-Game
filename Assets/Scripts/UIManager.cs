@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
-    public static UIManager Instance { get; private set; }
+    public static UIManager Instance {get; private set;}
 
     // Auth UI
     [SerializeField] private GameObject authenticateUI;

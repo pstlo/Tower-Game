@@ -9,7 +9,7 @@ public class GameOver : MonoBehaviour
         {
             UIManager.Instance.ToggleGameOverUI(true);
             PlayerController winner = collision.gameObject.GetComponent<PlayerController>();
-            UIManager.Instance.SetWinnerText(winner.GetName());
+            UIManager.Instance.SetWinnerText(winner.GetName() + " wins!");
         }
     }
 }
