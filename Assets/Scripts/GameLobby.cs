@@ -17,16 +17,19 @@ public class GameLobby : MonoBehaviour
 
     [SerializeField] private Transform respawnPoint;
     [SerializeField] private GameObject mainCamera;
+
     private const string KEY_RELAY_CODE = "RelayCode";
-    public const string KEY_PLAYER_NAME = "PlayerName";
+    private const string KEY_PLAYER_NAME = "PlayerName";
+
     private Lobby hostLobby;
     private Lobby joinedLobby;
+
     private float refreshLobbyListTimer = 5f;
     private float heartBeatTimer;
     private float updateTimer;
+
     public string playerName;
 
-    public bool gameStarted;
     
     private async void Start()
     {
@@ -113,11 +116,12 @@ public class GameLobby : MonoBehaviour
             joinedLobby = hostLobby;            
             string lobbyCode = lobby.LobbyCode;
             Debug.Log("Created " + lobbyName + " for " + maxPlayers + " players. " + lobby.Id + " " + lobbyCode);
-            UIManager.Instance.SetJoinCode(lobbyCode);
+            UIManager.Instance.SetJoinCodeText(lobbyCode);
             UIManager.Instance.ToggleJoinCode(true);
             UIManager.Instance.ToggleStartUI(true);
+            UIManager.Instance.ToggleStartButton(true);
         }
-        catch (LobbyServiceException e) { Debug.Log(e); }
+        catch (LobbyServiceException e) {Debug.Log(e);}
     }
     
      public async void JoinLobbyByCode(string lobbyCode) 
@@ -141,20 +145,22 @@ public class GameLobby : MonoBehaviour
     }
     
     public async void LeaveLobby() {
-        if (joinedLobby != null) {
+        if (joinedLobby != null) 
+        {
             try {
                 Debug.Log("Leaving lobby");
-                if (IsLobbyHost()) {UIManager.Instance.ToggleStartUI(false);}
+                if (IsLobbyHost()) {GameManager.Instance.EndGame();}
                 await LobbyService.Instance.RemovePlayerAsync(joinedLobby.Id, AuthenticationService.Instance.PlayerId);
                 NetworkManager.Singleton.Shutdown();
             } 
             catch (LobbyServiceException e) {Debug.Log(e);}
         }
-        else {Debug.Log("Lobby is null");}
 
+        UIManager.Instance.ToggleStartUI(false);
+        UIManager.Instance.ToggleCountdownTimer(false);
         UIManager.Instance.ToggleJoinCode(false);
-        UIManager.Instance.ToggleNetworkUI(true);
         UIManager.Instance.TogglePauseUI(false);
+        UIManager.Instance.ToggleNetworkUI(true);
         mainCamera.SetActive(true);
         joinedLobby = null;
     }   
@@ -188,10 +194,7 @@ public class GameLobby : MonoBehaviour
         }
     }
 
-    private Player GetPlayer()
-    {
-        return new Player(AuthenticationService.Instance.PlayerId, null, new Dictionary<string, PlayerDataObject> {{KEY_PLAYER_NAME, new PlayerDataObject(PlayerDataObject.VisibilityOptions.Public, playerName)}});
-    }
+    private Player GetPlayer() {return new Player(AuthenticationService.Instance.PlayerId, null, new Dictionary<string, PlayerDataObject> {{KEY_PLAYER_NAME, new PlayerDataObject(PlayerDataObject.VisibilityOptions.Public, playerName)}});}
 
     private async void HandleHeartBeat()
     {
@@ -292,7 +295,7 @@ public class GameLobby : MonoBehaviour
         }
     }
 
-    private void UpdatePlayerNames(GameObject[] players)
+    public void UpdatePlayerNames(GameObject[] players)
     {
         foreach (GameObject player in players)
         {
@@ -301,21 +304,6 @@ public class GameLobby : MonoBehaviour
         }
     }
 
-    private GameObject[] GetPlayers() {return GameObject.FindGameObjectsWithTag("Player");}
-
-
-    public void StartGame()
-    {
-        GameObject[] players = GetPlayers();
-        UpdatePlayerNames(players);
-        RespawnAllPlayers(players);
-        UIManager.Instance.ToggleStartUI(false);
-
-        // Start animation / countdown?
-
-        gameStarted = true; // need to sync var
-        Debug.Log("Game started");
-    }
-
+    public GameObject[] GetPlayers() {return GameObject.FindGameObjectsWithTag("Player");}
     
 }

@@ -1,11 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Staircase : MonoBehaviour
 {
+    [SerializeField] private GameObject tower;
     [SerializeField] private GameObject stepPrefab;
-    [SerializeField] private int numStairs; // 370 
+    [SerializeField] private int numStairs; // 368
 
     void Start()
     {
@@ -21,6 +20,7 @@ public class Staircase : MonoBehaviour
             Vector3 pos = new Vector3(centerBottom.x + x, i * 0.2f, centerBottom.z + z); 
             Quaternion rot = Quaternion.Euler(0, -i * angleDegrees, 0); 
             GameObject step = Instantiate(stepPrefab, pos, rot);
+            step.transform.SetParent(tower.transform);
         }
     }
 

@@ -11,10 +11,11 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private float jumpForce = 5f; 
     private Rigidbody rb; 
     private PlayerCamera playerCamera;
-    private bool isPaused = false;
-    private bool isGrounded = true; 
+    
     private string playerName;
     private float playerNameOffset = 1.5f;
+    private bool isPaused = false;
+    private bool isGrounded = true; 
 
     void Start()
     {
@@ -23,7 +24,6 @@ public class PlayerController : NetworkBehaviour
         rb.isKinematic = false;
         NetworkObject.DestroyWithScene = true;
         playerName = GameLobby.Instance.playerName;
-        
 
         if (IsLocalPlayer)
         {
@@ -52,7 +52,7 @@ public class PlayerController : NetworkBehaviour
             SetPauseMenuActive(isPaused);
         }
 
-        if (!isPaused && isGrounded && Input.GetKeyDown(KeyCode.Space)) 
+        if (!isPaused && isGrounded && GameManager.Instance.CanMove() && Input.GetKeyDown(KeyCode.Space)) 
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             isGrounded = false; 
@@ -74,7 +74,7 @@ public class PlayerController : NetworkBehaviour
             return;
         }
 
-        if (!isPaused) // && GameLobby.Instance.gameStarted)
+        if (!isPaused && GameManager.Instance.CanMove())
         {
             float horizontalInput = Input.GetAxis("Horizontal");
             float verticalInput = Input.GetAxis("Vertical");
@@ -92,10 +92,7 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    private void HandleDisconnect(ulong clientId)
-    {
-        if (clientId == OwnerClientId) {Leave();}
-    }
+    private void HandleDisconnect(ulong clientId) {if (clientId == OwnerClientId) {Leave();}}
 
     public void Respawn()
     {
