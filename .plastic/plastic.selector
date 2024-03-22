@@ -1,4 +1,3 @@
-repository "Tower Game@pstlo@cloud"
+rep "Tower Game@pstlo@cloud"
   path "/"
-    smartbranch "/main" changeset "33"                                     
-     
+    smartbranch "/main" changeset "36" 

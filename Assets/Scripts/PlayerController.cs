@@ -9,6 +9,7 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private TMP_Text playerNameText;
     [SerializeField] private float moveSpeed = 10f; 
     [SerializeField] private float jumpForce = 5f; 
+    [SerializeField] private A
     private Rigidbody rb; 
     private PlayerCamera playerCamera;
     
