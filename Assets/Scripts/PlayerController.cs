@@ -11,8 +11,9 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private float jumpForce = 5f; 
     
     
-    private Rigidbody rb; 
+    private Rigidbody rigidBody; 
     private PlayerCamera playerCamera;
+    private Animator animator;
     
     private string playerName;
     private float playerNameOffset = 1.5f;
@@ -23,8 +24,12 @@ public class PlayerController : NetworkBehaviour
     void Start()
     {
         NetworkManager.Singleton.OnClientDisconnectCallback += HandleDisconnect;
-        rb = GetComponent<Rigidbody>();
-        rb.isKinematic = false;
+
+        rigidBody = GetComponent<Rigidbody>();
+        rigidBody.isKinematic = false;
+
+        animator = GetComponentInChildren<Animator>();
+
         NetworkObject.DestroyWithScene = true;
         playerName = GameLobby.Instance.playerName;
 
@@ -34,32 +39,36 @@ public class PlayerController : NetworkBehaviour
             
             GameObject newCamera = Instantiate(playerCameraPrefab, transform.position, Quaternion.identity);
             PlayerCamera newPlayerCamera = newCamera.GetComponent<PlayerCamera>();
-            newPlayerCamera.player = transform;
+            newPlayerCamera.setPlayer(transform);
             playerCamera = newPlayerCamera;
             playerCamera.transform.SetParent(transform);
 
             playerNameText.text = playerName;
             playerNameText.transform.localPosition = Vector3.up * playerNameOffset;
             UpdateNameTextRpc(playerName);
+
             Respawn();
         }
     }
+
 
     void Update()
     {
         if (!IsOwner) {return;}
 
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (Input.GetKeyDown(KeyCode.Escape)) // PAUSE
         {
             isPaused = !isPaused;
             SetPauseMenuActive(isPaused);
         }
 
-        if (!isPaused && isGrounded && GameManager.Instance.CanMove() && Input.GetKeyDown(KeyCode.Space)) 
+        if (!isPaused && isGrounded && GameManager.Instance.CanMove() && Input.GetKeyDown(KeyCode.Space)) // JUMPING
         {
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            rigidBody.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             isGrounded = false; 
         }
+
+        // NAMETAG
         playerNameText.transform.LookAt(playerCamera.transform);
         playerNameText.transform.Rotate(0, 180, 0);
     }
@@ -79,51 +88,73 @@ public class PlayerController : NetworkBehaviour
 
         if (!isPaused && GameManager.Instance.CanMove())
         {
+            // MOVEMENT INPUT
             float horizontalInput = Input.GetAxis("Horizontal");
             float verticalInput = Input.GetAxis("Vertical");
+
+            // CAMERA MOVEMENT
             Vector3 cameraForward = playerCamera.transform.forward;
             Vector3 cameraRight = playerCamera.transform.right;
             cameraForward.y = 0f;
             cameraRight.y = 0f;
             cameraForward.Normalize();
             cameraRight.Normalize();
+
+            // MOVEMENT VECTOR
             Vector3 movementDirection = (cameraForward * verticalInput + cameraRight * horizontalInput).normalized;
             Vector3 movement = movementDirection * moveSpeed * Time.deltaTime;
-            rb.MovePosition(rb.position + movement);
 
-            if (movementDirection != Vector3.zero) {transform.rotation = Quaternion.LookRotation(movementDirection);}
-            if (rb.position.y < -5f) {Respawn();}
+            
+            if (movementDirection != Vector3.zero) // MOVING
+            {
+                rigidBody.MovePosition(rigidBody.position + movement);
+                transform.rotation = Quaternion.LookRotation(movementDirection);
+            }
+
+            else // IDLE
+            {
+
+            }
+
+            if (rigidBody.position.y < -5f) {Respawn();} // RESPAWN
         }
     }
 
 
     private void HandleDisconnect(ulong clientId) {if (clientId == OwnerClientId) {Leave();}}
 
+
     public void Respawn()
     {
         if (spawnPoint != null)
         {
-            rb.velocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
+            rigidBody.velocity = Vector3.zero;
+            rigidBody.angularVelocity = Vector3.zero;
             transform.position = spawnPoint.position;
             transform.rotation = spawnPoint.rotation;
         }
     }
 
+
     [Rpc(SendTo.Everyone)]
     public void RespawnRpc() {Respawn();}
 
+
     void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Ground")) {isGrounded = true;}
+        if (collision.gameObject.CompareTag("Ground")) {isGrounded = true;} // LANDING
     }
+
 
     [Rpc(SendTo.Everyone)]
     private void UpdateNameTextRpc(string name) {playerNameText.text = name; }
 
+
     public string GetName() {return playerName;}
 
+
     private void SetName(string name) {playerName = name;}
+
 
     public void UpdateName()
     {
@@ -136,10 +167,7 @@ public class PlayerController : NetworkBehaviour
     }
 
 
-    private void SetPauseMenuActive(bool active)
-    {
-        UIManager.Instance.TogglePauseUI(active);
-    }
+    private void SetPauseMenuActive(bool active) {UIManager.Instance.TogglePauseUI(active);}
 
     public void Leave()
     {

@@ -1,14 +1,12 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerCamera : MonoBehaviour
 {
-    [SerializeField] public Transform player;
+    [SerializeField] private Transform player;
     [SerializeField] private Transform tower;
     [SerializeField] private float cameraDist = 30f;
 
-    // Update is called once per frame
+
     void FixedUpdate()
     {
         if (player == null) 
@@ -25,4 +23,6 @@ public class PlayerCamera : MonoBehaviour
         transform.position = desiredPosition;
         transform.LookAt(player);
     }
+
+    public void setPlayer(Transform player) {this.player = player;}
 }
