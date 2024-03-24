@@ -6,6 +6,8 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private Transform tower;
     [SerializeField] private float cameraDist = 30f;
 
+    private float cameraDirection = -1f; // -1 -> forwards,  1 -> backwards
+
 
     void FixedUpdate()
     {
@@ -17,10 +19,11 @@ public class PlayerCamera : MonoBehaviour
         
         Vector3 centerPos = tower.position;
         centerPos.y = player.position.y;
+        
         float angle = Vector3.Angle(player.position,centerPos);
         Vector3 directionToPlayer = (player.position - centerPos).normalized;
-        Vector3 desiredPosition = centerPos + Quaternion.Euler(0, angle, 0) * directionToPlayer * cameraDist;
-        transform.position = desiredPosition;
+        
+        transform.position = centerPos + Quaternion.Euler(0, cameraDirection * angle, 0) * directionToPlayer * cameraDist;
         transform.LookAt(player);
     }
 

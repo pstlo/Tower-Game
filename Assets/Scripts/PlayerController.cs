@@ -4,19 +4,24 @@ using UnityEngine;
 
 public class PlayerController : NetworkBehaviour
 {    
+    [SerializeField] public Transform tower;
     [SerializeField] public Transform spawnPoint;
     [SerializeField] private GameObject playerCameraPrefab;
     [SerializeField] private TMP_Text playerNameText;
+    
+    // CONSTANTS
     [SerializeField] private float moveSpeed = 10f; 
     [SerializeField] private float jumpForce = 5f; 
     
-    
+    // COMPONENTS
     private Rigidbody rigidBody; 
     private PlayerCamera playerCamera;
     private Animator animator;
     
     private string playerName;
     private float playerNameOffset = 1.5f;
+
+    // STATES
     private bool isPaused = false;
     private bool isGrounded = true; 
 
@@ -66,6 +71,8 @@ public class PlayerController : NetworkBehaviour
         {
             rigidBody.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             isGrounded = false; 
+
+            // JUMP ANIMATION
         }
 
         // NAMETAG
@@ -105,15 +112,19 @@ public class PlayerController : NetworkBehaviour
             Vector3 movement = movementDirection * moveSpeed * Time.deltaTime;
 
             
-            if (movementDirection != Vector3.zero) // MOVING
-            {
-                rigidBody.MovePosition(rigidBody.position + movement);
-                transform.rotation = Quaternion.LookRotation(movementDirection);
-            }
+                if (movementDirection != Vector3.zero) // MOVING
+                {
+                    rigidBody.MovePosition(rigidBody.position + movement);
+                    transform.rotation = Quaternion.LookRotation(movementDirection);
+
+                // MOVEMENT ANIMATION
+                animator.SetFloat("Speed", 0.5f);
+                }
 
             else // IDLE
             {
-
+                // IDLE ANIMATION
+                animator.SetFloat("Speed", 0);
             }
 
             if (rigidBody.position.y < -5f) {Respawn();} // RESPAWN
