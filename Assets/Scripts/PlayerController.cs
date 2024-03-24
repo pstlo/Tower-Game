@@ -17,6 +17,7 @@ public class PlayerController : NetworkBehaviour
     private Rigidbody rigidBody; 
     private PlayerCamera playerCamera;
     private Animator animator;
+    private LineRenderer circleRenderer;
     
     private string playerName;
     private float playerNameOffset = 1.5f;
@@ -25,9 +26,22 @@ public class PlayerController : NetworkBehaviour
     private bool isPaused = false;
     private bool isGrounded = true; 
 
+    Vector3 towerCenter;
+    float circleRadius;
+
 
     void Start()
     {
+
+        towerCenter = tower.position;
+
+        // PATH VISUALIZER
+        circleRenderer = gameObject.AddComponent<LineRenderer>();
+        circleRenderer.material = new Material(Shader.Find("Unlit/Color"));
+        circleRenderer.startWidth = 0.1f; 
+        circleRenderer.endWidth = 0.1f; 
+        circleRenderer.enabled = false;  
+        
         NetworkManager.Singleton.OnClientDisconnectCallback += HandleDisconnect;
 
         rigidBody = GetComponent<Rigidbody>();
@@ -78,11 +92,15 @@ public class PlayerController : NetworkBehaviour
         // NAMETAG
         playerNameText.transform.LookAt(playerCamera.transform);
         playerNameText.transform.Rotate(0, 180, 0);
+
+        towerCenter.y = gameObject.transform.position.y;
+        circleRadius = Vector3.Distance(towerCenter, transform.position);
     }
 
 
     void FixedUpdate()
     {
+        DrawCirclePath(); // TESTING
         if (!IsOwner) { return; }
 
         if (gameObject == null)
@@ -100,6 +118,7 @@ public class PlayerController : NetworkBehaviour
             float verticalInput = Input.GetAxis("Vertical");
 
             // CAMERA MOVEMENT
+            
             Vector3 cameraForward = playerCamera.transform.forward;
             Vector3 cameraRight = playerCamera.transform.right;
             cameraForward.y = 0f;
@@ -110,25 +129,40 @@ public class PlayerController : NetworkBehaviour
             // MOVEMENT VECTOR
             Vector3 movementDirection = (cameraForward * verticalInput + cameraRight * horizontalInput).normalized;
             Vector3 movement = movementDirection * moveSpeed * Time.deltaTime;
-
             
-                if (movementDirection != Vector3.zero) // MOVING
-                {
-                    rigidBody.MovePosition(rigidBody.position + movement);
-                    transform.rotation = Quaternion.LookRotation(movementDirection);
+            if (movementDirection != Vector3.zero) // MOVING
+            {
+                rigidBody.MovePosition(rigidBody.position + movement);
+                transform.rotation = Quaternion.LookRotation(movementDirection);
 
                 // MOVEMENT ANIMATION
                 animator.SetFloat("Speed", 0.5f);
-                }
+            }
 
             else // IDLE
             {
                 // IDLE ANIMATION
                 animator.SetFloat("Speed", 0);
             }
-
+            
             if (rigidBody.position.y < -5f) {Respawn();} // RESPAWN
         }
+    }
+
+    
+    private void DrawCirclePath()
+    {
+        int segments = 40; 
+        float angle = 0f;
+        circleRenderer.positionCount = segments + 1; 
+
+        for (int i = 0; i <= segments; i++)
+        {
+            Vector3 pos = towerCenter + new Vector3(Mathf.Cos(angle) * circleRadius, 0f, Mathf.Sin(angle) * circleRadius);
+            circleRenderer.SetPosition(i, pos);
+            angle += 2f * Mathf.PI / segments;
+        }
+        circleRenderer.enabled = true; 
     }
 
 
