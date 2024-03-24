@@ -6,28 +6,31 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private Transform tower;
     [SerializeField] private float cameraDist = 30f;
 
-    Vector3 centerPos;
+    private Vector3 towerPosition;
 
-    private float cameraDirection = -1f; // -1 -> forwards,  1 -> backwards
-
-    void Start() {centerPos = tower.position;}
-
+    void Start() {towerPosition = tower.position;}
+    
     void FixedUpdate()
     {
-        if (player == null) 
+        if (player == null || tower == null) 
         {
             Destroy(gameObject);
             return;
         }
-        
-        centerPos.y = player.position.y;
-        
-        float angle = Vector3.Angle(player.position,centerPos);
-        Vector3 directionToPlayer = (player.position - centerPos).normalized;
-        
-        transform.position = centerPos + Quaternion.Euler(0, cameraDirection * angle, 0) * directionToPlayer * cameraDist;
+
+
+        towerPosition.y = player.position.y;
+
+        Vector3 directionToPlayer = (player.position - towerPosition).normalized;
+        Vector3 targetPosition = towerPosition + directionToPlayer * cameraDist;
+        targetPosition.y = player.position.y;
+
+        transform.position = targetPosition;
         transform.LookAt(player);
     }
 
-    public void setPlayer(Transform player) {this.player = player;}
+    public void SetPlayer(Transform player) 
+    { 
+        this.player = player; 
+    }
 }
