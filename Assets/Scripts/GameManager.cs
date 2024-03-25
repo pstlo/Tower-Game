@@ -19,8 +19,29 @@ public class GameManager : NetworkBehaviour
 
     [SerializeField] private string startMessage = "Go!";
 
+    [SerializeField] private GameObject boulderPrefab;
 
-    private void Awake() { Instance = this; }
+
+    // BOULDER SPAWNING
+    [SerializeField] private GameObject tower;
+    private Vector3 cylinderCenter;
+    private float boulderSpawnRadius;
+    private float boulderSpawnHeight;
+
+    // should not spawn inside tower
+
+    private float minSpawnDelay = 1f;
+    private float maxSpawnDelay = 5f;
+
+    void Start() 
+    {
+        Instance = this;
+        // Boulder spawn area
+        cylinderCenter = tower.transform.position;
+        cylinderCenter.y = 0;
+        boulderSpawnHeight = tower.transform.localScale.y;
+        boulderSpawnRadius = tower.transform.localScale.x;
+    }
 
     void Update()
     {
@@ -38,9 +59,8 @@ public class GameManager : NetworkBehaviour
     {
         if (IsOwner)
         {
-            GameObject[] players = GameLobby.Instance.GetPlayers();
-            GameLobby.Instance.UpdatePlayerNames(players);
-            GameLobby.Instance.RespawnAllPlayers(players); // this not workin 0.00005% the time
+            GameLobby.Instance.RespawnAllPlayers(); // this not workin 0.00005% the time 
+            GameLobby.Instance.UpdatePlayerNames();
 
             countdownTimer.Value = 5f;
             gameStarted.Value = true;
@@ -50,6 +70,7 @@ public class GameManager : NetworkBehaviour
             UIManager.Instance.ToggleStartUI(true);
             showCountdown.Value = true;
             UIManager.Instance.ToggleStartButton(false);
+            InvokeRepeating(nameof(RandomSpawnBoulder), Random.Range(minSpawnDelay, maxSpawnDelay), Random.Range(minSpawnDelay, maxSpawnDelay));
         }
     }
 
@@ -59,6 +80,10 @@ public class GameManager : NetworkBehaviour
         gameStarted.Value = false;
         isStarting = false;
         isStarted = false;
+
+        CancelInvoke(nameof(RandomSpawnBoulder));
+        
+        // DESPAWN ALL BOULDERS
     }
 
     public bool HasGameStarted() { return gameStarted.Value; }
@@ -86,8 +111,28 @@ public class GameManager : NetworkBehaviour
         if (countdownTimer.Value > 0f) {countdownTimerText.Value = string.Format("{00}", Mathf.FloorToInt(countdownTimer.Value % 60f));}
 
         if (countdownTimer.Value >= -1 * startTextDuration) {countdownTimer.Value -= Time.deltaTime; }
-
-
     }
 
+
+    public void SpawnBoulder(Vector3 position)
+    {
+        if (IsOwner)
+        {
+            GameObject boulder = Instantiate(boulderPrefab, position, Quaternion.identity);
+            NetworkObject networkObject = boulder.GetComponent<NetworkObject>();
+            if (networkObject != null) {networkObject.Spawn();}
+        }
+    }
+
+    public void RandomSpawnBoulder()
+    {
+        if (IsOwner)
+        {
+            Vector2 randomPointOnBase = Random.insideUnitCircle * boulderSpawnRadius;
+            Vector3 spawnPosition = new Vector3(randomPointOnBase.x, 0f, randomPointOnBase.y) + cylinderCenter;
+            float randomHeight = Random.Range(0f, boulderSpawnHeight);
+            spawnPosition.y = randomHeight;
+            SpawnBoulder(spawnPosition);
+        }
+    }
 }
