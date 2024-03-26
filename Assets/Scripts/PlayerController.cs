@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlayerController : NetworkBehaviour
 {    
-    [SerializeField] public Transform tower;
+    [SerializeField] private Transform tower;
     [SerializeField] private Transform spawnPoint;
     [SerializeField] private GameObject playerCameraPrefab;
     [SerializeField] private TMP_Text playerNameText;
@@ -12,6 +12,12 @@ public class PlayerController : NetworkBehaviour
     // CONSTANTS
     [SerializeField] private float moveSpeed = 10f; 
     [SerializeField] private float jumpForce = 5f; 
+    [SerializeField] private float punchForce = 5f; 
+    [SerializeField] private float punchRange = 2f; 
+    [SerializeField] private float punchCooldown = 3f;
+    [SerializeField] private float punchMoveSpeedModifier = 0.4f;
+
+
     
     // COMPONENTS
     private Rigidbody rb; 
@@ -23,7 +29,10 @@ public class PlayerController : NetworkBehaviour
 
     // STATES
     private bool isPaused = false;
-    private bool isGrounded = true; 
+    private bool isGrounded = true;
+    private bool punching;
+    private float lastPunchTime; 
+    private float speed;
 
     Vector3 towerCenter;
 
@@ -40,6 +49,7 @@ public class PlayerController : NetworkBehaviour
         NetworkObject.DestroyWithScene = true;
         playerName = GameLobby.Instance.playerName;
         towerCenter = tower.position;
+        speed = moveSpeed;
 
         if (IsLocalPlayer)
         {
@@ -70,13 +80,24 @@ public class PlayerController : NetworkBehaviour
             SetPauseMenuActive(isPaused);
         }
 
-        if (!isPaused && isGrounded && GameManager.Instance.CanMove() && Input.GetKeyDown(KeyCode.Space)) // JUMPING
+        if (!isPaused && GameManager.Instance.CanMove()) 
         {
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-            isGrounded = false;
+            // JUMPING
+            if (isGrounded && Input.GetKeyDown(KeyCode.Space)) 
+            {
+                rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+                isGrounded = false;
 
-            // JUMP ANIMATION
-            animator.SetTrigger("Jump");
+                // JUMP ANIMATION
+                animator.SetTrigger("Jump");
+            }
+
+            // PUNCHING
+            if (Input.GetMouseButtonDown(0) && !Input.GetKey(KeyCode.LeftShift) && !Input.GetKey(KeyCode.RightShift))
+            {
+                Punch();
+            }
+
         }
 
         // NAMETAG
@@ -99,6 +120,11 @@ public class PlayerController : NetworkBehaviour
             return;
         }
 
+        if (punching && Time.time - lastPunchTime >= punchCooldown) {punching = false;}
+
+        if (punching) {speed = moveSpeed * punchMoveSpeedModifier;}
+        else {speed = moveSpeed;}
+
         if (!isPaused && GameManager.Instance.CanMove())
         {
             float horizontalInput = Input.GetAxis("Horizontal");
@@ -112,7 +138,7 @@ public class PlayerController : NetworkBehaviour
 
             if (movement.magnitude > 0)
             {
-                rb.MovePosition(rb.position + movement * moveSpeed * Time.deltaTime);
+                rb.MovePosition(rb.position + movement * speed * Time.deltaTime);
                 transform.rotation = Quaternion.LookRotation(movement.normalized);
                 animator.SetFloat("Speed", 0.5f);
             }
@@ -120,6 +146,8 @@ public class PlayerController : NetworkBehaviour
             {
                 animator.SetFloat("Speed", 0); // prob should not be instant
             }
+
+            
 
             if (rb.position.y < -5f) Respawn();
         }
@@ -192,8 +220,25 @@ public class PlayerController : NetworkBehaviour
         spawnPoint.rotation = rot;
     }
 
-    private void Punch() 
+    private void Punch()
     {
-        
+        if (isGrounded && Time.time - lastPunchTime >= punchCooldown)
+        {
+            lastPunchTime = Time.time;
+            punching = true;
+            animator.SetTrigger("Punch");
+
+            foreach (Collider hitCollider in Physics.OverlapSphere(transform.position, punchRange))
+            {
+                if (hitCollider.gameObject != gameObject && hitCollider.CompareTag("Player"))
+                {
+                    Rigidbody hitRb = hitCollider.GetComponent<Rigidbody>();
+                    Vector3 direction = (hitCollider.transform.position - transform.position).normalized;
+                    hitRb.AddForce(direction * punchForce, ForceMode.Impulse);
+
+                    Debug.Log(GetName() + " punched " + hitCollider.gameObject.GetComponent<PlayerController>().GetName());
+                }
+            }
+        }
     }
 }
