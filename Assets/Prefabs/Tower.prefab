@@ -97,8 +97,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4450293a935dbd947975269a57777f41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  tower: {fileID: 7115184589233178823}
   stepPrefab: {fileID: 7984296821210353244, guid: 85a8910edb7e3af43b3683f5d4cb675d, type: 3}
-  numStairs: 368
+  numStairs: 370
 --- !u!64 &5334691458829893902
 MeshCollider:
   m_ObjectHideFlags: 0

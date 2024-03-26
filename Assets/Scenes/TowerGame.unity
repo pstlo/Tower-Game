@@ -1234,7 +1234,7 @@ MonoBehaviour:
     ConnectionData: 
     EnableTimeResync: 0
     TimeResyncInterval: 30
-    EnsureNetworkVariableLengthSafety: 1
+    EnsureNetworkVariableLengthSafety: 0
     EnableSceneManagement: 1
     ForceSamePrefabs: 1
     RecycleNetworkIds: 1
@@ -1703,7 +1703,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &338284849
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3129,6 +3129,8 @@ MonoBehaviour:
         byte0124: 0
         byte0125: 0
   startMessage: Go!
+  boulderPrefab: {fileID: 7644836285094284465, guid: 7fa9efbfb4684c94ba40934e1be0b8b1, type: 3}
+  tower: {fileID: 7115184589233178823, guid: 0f830ede18fec69459fd12699630ac27, type: 3}
 --- !u!4 &856181532
 Transform:
   m_ObjectHideFlags: 0

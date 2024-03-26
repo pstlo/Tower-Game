@@ -277,35 +277,32 @@ public class GameLobby : MonoBehaviour
     
     private bool IsLobbyHost() {return joinedLobby != null && joinedLobby.HostId == AuthenticationService.Instance.PlayerId;}
     
-    public void RespawnAllPlayers(GameObject[] players)
+    public void RespawnAllPlayers()
     {
         float horizontalSpacing = 2.0f;
         Vector3 currentPosition = respawnPoint.position;
         Quaternion spawnRotation = respawnPoint.rotation;
 
-        foreach (GameObject player in players)
+        foreach (var client in NetworkManager.Singleton.ConnectedClients)
         {
-            PlayerController playerController = player.GetComponent<PlayerController>();
-            if (playerController != null)
+            if (client.Value.PlayerObject != null)
             {
-                playerController.spawnPoint.position = currentPosition;
-                playerController.spawnPoint.rotation = spawnRotation;
+                PlayerController controller = client.Value.PlayerObject.GetComponent<PlayerController>();
+                controller.SetSpawn(currentPosition, spawnRotation);
+                controller.RespawnRpc();
                 currentPosition += Vector3.right * horizontalSpacing;
-                if (playerController.GetComponent<NetworkObject>().IsOwnedByServer) {playerController.Respawn();}
-                else {playerController.RespawnRpc();}
+                Debug.Log("Respawned player " + client.Value.ClientId);
             }
         }
     }
 
-    public void UpdatePlayerNames(GameObject[] players)
+    public void UpdatePlayerNames()
     {
-        foreach (GameObject player in players)
+        foreach (var client in NetworkManager.Singleton.ConnectedClients)
         {
-            PlayerController controller = player.GetComponent<PlayerController>();
+            PlayerController controller = client.Value.PlayerObject.GetComponent<PlayerController>();
             controller.UpdateName();
         }
     }
-
-    public GameObject[] GetPlayers() {return GameObject.FindGameObjectsWithTag("Player");}
     
 }

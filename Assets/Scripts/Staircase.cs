@@ -1,10 +1,12 @@
 using UnityEngine;
 
+//[ExecuteInEditMode] // SPAWNS IN EDITOR - ONLY RUN ONCE
 public class Staircase : MonoBehaviour
 {
     [SerializeField] private GameObject tower;
     [SerializeField] private GameObject stepPrefab;
     [SerializeField] private int numStairs; // 368
+
 
     void Start()
     {

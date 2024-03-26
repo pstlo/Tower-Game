@@ -5,7 +5,7 @@ using UnityEngine;
 public class PlayerController : NetworkBehaviour
 {    
     [SerializeField] public Transform tower;
-    [SerializeField] public Transform spawnPoint;
+    [SerializeField] private Transform spawnPoint;
     [SerializeField] private GameObject playerCameraPrefab;
     [SerializeField] private TMP_Text playerNameText;
     
@@ -14,7 +14,7 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private float jumpForce = 5f; 
     
     // COMPONENTS
-    private Rigidbody rigidBody; 
+    private Rigidbody rb; 
     private PlayerCamera playerCamera;
     private Animator animator;
     
@@ -28,14 +28,12 @@ public class PlayerController : NetworkBehaviour
     Vector3 towerCenter;
 
 
-
     void Start()
     {
-
         NetworkManager.Singleton.OnClientDisconnectCallback += HandleDisconnect;
 
-        rigidBody = GetComponent<Rigidbody>();
-        rigidBody.isKinematic = false;
+        rb = GetComponent<Rigidbody>();
+        rb.isKinematic = false;
 
         animator = GetComponentInChildren<Animator>();
 
@@ -74,10 +72,11 @@ public class PlayerController : NetworkBehaviour
 
         if (!isPaused && isGrounded && GameManager.Instance.CanMove() && Input.GetKeyDown(KeyCode.Space)) // JUMPING
         {
-            rigidBody.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-            isGrounded = false; 
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            isGrounded = false;
 
             // JUMP ANIMATION
+            animator.SetTrigger("Jump");
         }
 
         // NAMETAG
@@ -88,43 +87,43 @@ public class PlayerController : NetworkBehaviour
     }
 
 
-void FixedUpdate()
-{
-    if (!IsOwner) return;
-
-    if (gameObject == null)
+    void FixedUpdate()
     {
-        Destroy(gameObject);
-        Destroy(playerCamera);
-        playerCamera = null;
-        return;
-    }
+        if (!IsOwner) return;
 
-    if (!isPaused && GameManager.Instance.CanMove())
-    {
-        float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
-
-        Vector3 circleCenterToPlayer = transform.position - towerCenter;
-        Vector3 perpendicularToCircle = Vector3.Cross(circleCenterToPlayer, Vector3.up);
-        Vector3 horizontalMove = horizontalInput * (Quaternion.AngleAxis(0, Vector3.up) * perpendicularToCircle.normalized);
-        Vector3 verticalMove = -verticalInput * circleCenterToPlayer.normalized;
-        Vector3 movement = horizontalMove + verticalMove;
-
-        if (movement.magnitude > 0)
+        if (gameObject == null)
         {
-            rigidBody.MovePosition(rigidBody.position + movement * moveSpeed * Time.deltaTime);
-            transform.rotation = Quaternion.LookRotation(movement.normalized);
-            animator.SetFloat("Speed", 0.5f);
-        }
-        else
-        {
-            animator.SetFloat("Speed", 0); // prob should not be instant
+            Destroy(gameObject);
+            Destroy(playerCamera);
+            playerCamera = null;
+            return;
         }
 
-        if (rigidBody.position.y < -5f) Respawn();
+        if (!isPaused && GameManager.Instance.CanMove())
+        {
+            float horizontalInput = Input.GetAxis("Horizontal");
+            float verticalInput = Input.GetAxis("Vertical");
+
+            Vector3 circleCenterToPlayer = transform.position - towerCenter;
+            Vector3 perpendicularToCircle = Vector3.Cross(circleCenterToPlayer, Vector3.up);
+            Vector3 horizontalMove = horizontalInput * (Quaternion.AngleAxis(0, Vector3.up) * perpendicularToCircle.normalized);
+            Vector3 verticalMove = -verticalInput * circleCenterToPlayer.normalized;
+            Vector3 movement = horizontalMove + verticalMove;
+
+            if (movement.magnitude > 0)
+            {
+                rb.MovePosition(rb.position + movement * moveSpeed * Time.deltaTime);
+                transform.rotation = Quaternion.LookRotation(movement.normalized);
+                animator.SetFloat("Speed", 0.5f);
+            }
+            else
+            {
+                animator.SetFloat("Speed", 0); // prob should not be instant
+            }
+
+            if (rb.position.y < -5f) Respawn();
+        }
     }
-}
 
 
     private void HandleDisconnect(ulong clientId) {if (clientId == OwnerClientId) {Leave();}}
@@ -132,13 +131,10 @@ void FixedUpdate()
 
     public void Respawn()
     {
-        if (spawnPoint != null)
-        {
-            rigidBody.velocity = Vector3.zero;
-            rigidBody.angularVelocity = Vector3.zero;
-            transform.position = spawnPoint.position;
-            transform.rotation = spawnPoint.rotation;
-        }
+        rb.velocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+        rb.position = spawnPoint.position;
+        rb.rotation = spawnPoint.rotation;
     }
 
 
@@ -148,7 +144,11 @@ void FixedUpdate()
 
     void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Ground")) {isGrounded = true;} // LANDING
+        if (collision.gameObject.CompareTag("Ground")) // LANDING
+        {
+            isGrounded = true;
+            rb.angularVelocity = Vector3.zero;
+        } 
     }
 
 
@@ -175,6 +175,7 @@ void FixedUpdate()
 
     private void SetPauseMenuActive(bool active) {UIManager.Instance.TogglePauseUI(active);}
 
+
     public void Leave()
     {
         if (IsLocalPlayer)
@@ -183,5 +184,16 @@ void FixedUpdate()
             Destroy(playerCamera);
             Destroy(gameObject);
         }
+    }
+
+    public void SetSpawn(Vector3 pos, Quaternion rot)
+    {
+        spawnPoint.position = pos;
+        spawnPoint.rotation = rot;
+    }
+
+    private void Punch() 
+    {
+        
     }
 }
