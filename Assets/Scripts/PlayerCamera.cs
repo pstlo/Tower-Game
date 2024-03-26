@@ -48,10 +48,11 @@ public class PlayerCamera : MonoBehaviour
             targetPosition.y = cameraHeight;
             transform.position = targetPosition;
             transform.LookAt(player);
+            Quaternion rotation = Quaternion.Euler(tiltAngle, transform.rotation.eulerAngles.y, transform.rotation.eulerAngles.z);
+            transform.rotation = rotation;
         }
         
-        Quaternion rotation = Quaternion.Euler(tiltAngle, transform.rotation.eulerAngles.y, transform.rotation.eulerAngles.z);
-        transform.rotation = rotation;
+        
 
         float mouseWheel = Input.GetAxis("Mouse ScrollWheel");
 
@@ -89,13 +90,21 @@ public class PlayerCamera : MonoBehaviour
                 orbitAngle = Mathf.Atan2(offset.x, offset.z) * Mathf.Rad2Deg;
             }
 
-            if (Input.GetMouseButtonUp(0)) {movingOrbit = false;}
+            if (Input.GetMouseButtonUp(0)) 
+            {
+                movingOrbit = false;
+            }
 
             if (movingOrbit)
             {
                 float mouseX = Input.GetAxis("Mouse X");
                 orbitAngle += mouseX * orbitSpeed;
-                Vector3 orbitPosition = targetPosition + Quaternion.Euler(0f, orbitAngle, 0f) * new Vector3(0f, 0f, cameraDist);
+               
+            }
+
+            if (orbiting)
+            {
+                Vector3 orbitPosition = targetPosition + Quaternion.Euler(tiltAngle, orbitAngle, cameraDist) * new Vector3(0f, 0f, cameraDist);
                 transform.position = orbitPosition;
                 transform.LookAt(targetPosition);
             }
