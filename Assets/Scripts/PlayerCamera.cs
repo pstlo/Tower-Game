@@ -12,8 +12,8 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private float minTilt = -60;
     [SerializeField] private float tiltSpeed = 2;
     [SerializeField] private float orbitSpeed = 2;
-    [SerializeField] private float maxHeight = 100;
-    [SerializeField] private float minHeight = -100;
+    [SerializeField] private int maxHeight = 100;
+    [SerializeField] private int minHeight = 0;
     [SerializeField] private float scrollingHeightSpeed = 3;
 
     private float tiltAngle = 0;
@@ -62,11 +62,13 @@ public class PlayerCamera : MonoBehaviour
             // HEIGHT SCROLL
             if (mouseWheel != 0) 
             {
+                Debug.Log("transform: " + transform.position.y + " height: " + cameraHeight);
                 scrollingHeight = true;
                 cameraHeight += mouseWheel * scrollingHeightSpeed;
-                if (cameraHeight > maxHeight) {cameraHeight = Mathf.Max(maxHeight,player.position.y);Debug.Log("MAX");}
-                //if (cameraHeight < minHeight) {cameraHeight = Mathf.Min(minHeight,player.position.y);Debug.Log("MIN");}
-            }       
+                if (cameraHeight > maxHeight) {cameraHeight = Mathf.Max(maxHeight, player.position.y);}
+                if (cameraHeight < minHeight) {cameraHeight = Mathf.Min(minHeight, player.position.y);}
+            }  
+        
 
             if (scrollingHeight) {targetPosition.y = cameraHeight;}
 
