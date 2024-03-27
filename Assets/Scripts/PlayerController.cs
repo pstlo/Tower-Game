@@ -1,4 +1,5 @@
 using TMPro;
+using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -7,7 +8,7 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private Transform tower;
     [SerializeField] private Transform spawnPoint;
     [SerializeField] private GameObject playerCameraPrefab;
-    [SerializeField] private TMP_Text playerNameText;
+    [SerializeField] private TMP_Text playerNameText; 
     
     // CONSTANTS
     [SerializeField] private float moveSpeed = 10f; 
@@ -24,8 +25,10 @@ public class PlayerController : NetworkBehaviour
     private PlayerCamera playerCamera;
     private Animator animator;
     
-    private string playerName;
+    private string playerName; // USE NETWORK VAR public NetworkVariable<FixedString128Bytes> playerName = new NetworkVariable<FixedString128Bytes>("DefaultUserName", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     private float playerNameOffset = 1.5f;
+
+    Vector3 towerCenter;
 
     // STATES
     private bool isPaused = false;
@@ -33,8 +36,6 @@ public class PlayerController : NetworkBehaviour
     private bool punching;
     private float lastPunchTime; 
     private float speed;
-
-    Vector3 towerCenter;
 
 
     void Start()
@@ -95,7 +96,15 @@ public class PlayerController : NetworkBehaviour
             // PUNCHING
             if (Input.GetMouseButtonDown(0) && !Input.GetKey(KeyCode.LeftShift) && !Input.GetKey(KeyCode.RightShift))
             {
-                Punch();
+                if (isGrounded && Time.time - lastPunchTime >= punchCooldown)
+                {
+                    lastPunchTime = Time.time;
+                    punching = true;
+                    animator.SetTrigger("Punch");
+
+                    if (IsServer) {Punch();}
+                    else {PunchRpc();}
+                }
             }
 
         }
@@ -214,31 +223,37 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
+
     public void SetSpawn(Vector3 pos, Quaternion rot)
     {
         spawnPoint.position = pos;
         spawnPoint.rotation = rot;
     }
 
+
     private void Punch()
     {
-        if (isGrounded && Time.time - lastPunchTime >= punchCooldown)
+        foreach (Collider hitCollider in Physics.OverlapSphere(transform.position, punchRange))
         {
-            lastPunchTime = Time.time;
-            punching = true;
-            animator.SetTrigger("Punch");
-
-            foreach (Collider hitCollider in Physics.OverlapSphere(transform.position, punchRange))
+            if (hitCollider.gameObject != gameObject && hitCollider.CompareTag("Player"))
             {
-                if (hitCollider.gameObject != gameObject && hitCollider.CompareTag("Player"))
-                {
-                    Rigidbody hitRb = hitCollider.GetComponent<Rigidbody>();
-                    Vector3 direction = (hitCollider.transform.position - transform.position).normalized;
-                    hitRb.AddForce(direction * punchForce, ForceMode.Impulse);
-
-                    Debug.Log(GetName() + " punched " + hitCollider.gameObject.GetComponent<PlayerController>().GetName());
-                }
+                PlayerController playerController = hitCollider.gameObject.GetComponent<PlayerController>();
+                Debug.Log(GetName() + " threw a punch");
+                playerController.Punched(punchForce, transform.position);
             }
         }
+    }
+
+
+    [Rpc(SendTo.Everyone)]
+    private void PunchRpc() {Punch();}
+
+
+    public void Punched(float punchForce, Vector3 punchOrigin)
+    {
+        Rigidbody rb = GetComponent<Rigidbody>();
+        Vector3 direction = (transform.position - punchOrigin).normalized;
+        rb.AddForce(direction * punchForce, ForceMode.Impulse);
+        Debug.Log(GetName() + " received a punch");
     }
 }
