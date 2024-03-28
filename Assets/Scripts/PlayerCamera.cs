@@ -8,17 +8,23 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private float maxZoom = 20;
     [SerializeField] private float minZoom = 100;
     [SerializeField] private float zoomSpeed = 5;
+    [SerializeField] private float defaultZoom = 30;
+
+    [SerializeField] private float defaultTiltAngle = 0;
     [SerializeField] private float maxTilt = 60;
     [SerializeField] private float minTilt = -60;
     [SerializeField] private float tiltSpeed = 2;
+
     [SerializeField] private float orbitSpeed = 2;
+
     [SerializeField] private int maxHeight = 100;
     [SerializeField] private int minHeight = 0;
     [SerializeField] private float scrollingHeightSpeed = 3;
+  
 
-    private float tiltAngle = 0;
+    private float tiltAngle;
     private float orbitAngle = 0;
-    private float cameraDist = 30;
+    private float zoom;
     private float cameraHeight;
     private bool orbiting = false;
     private bool movingOrbit = false;
@@ -27,7 +33,12 @@ public class PlayerCamera : MonoBehaviour
     private Vector3 towerPosition;
 
 
-    void Start() {towerPosition = tower.position;}
+    void Start() 
+    {
+        towerPosition = tower.position;
+        tiltAngle = defaultTiltAngle;
+        zoom = defaultZoom;
+    }
     
      void Update()
     {
@@ -44,7 +55,7 @@ public class PlayerCamera : MonoBehaviour
         if (!orbiting)
         {
             Vector3 directionToPlayer = (player.position - towerPosition).normalized;
-            Vector3 targetPosition = towerPosition + directionToPlayer * cameraDist;
+            Vector3 targetPosition = towerPosition + directionToPlayer * zoom;
             targetPosition.y = cameraHeight;
             transform.position = targetPosition;
             transform.LookAt(player);
@@ -63,7 +74,6 @@ public class PlayerCamera : MonoBehaviour
             // HEIGHT SCROLL
             if (mouseWheel != 0) 
             {
-                Debug.Log("transform: " + transform.position.y + " height: " + cameraHeight);
                 scrollingHeight = true;
                 cameraHeight += mouseWheel * scrollingHeightSpeed;
                 if (cameraHeight > maxHeight) {cameraHeight = Mathf.Max(maxHeight, player.position.y);}
@@ -104,7 +114,7 @@ public class PlayerCamera : MonoBehaviour
 
             if (orbiting)
             {
-                Vector3 orbitPosition = targetPosition + Quaternion.Euler(tiltAngle, orbitAngle, cameraDist) * new Vector3(0f, 0f, cameraDist);
+                Vector3 orbitPosition = targetPosition + Quaternion.Euler(tiltAngle, orbitAngle, zoom) * new Vector3(0f, 0f, zoom);
                 transform.position = orbitPosition;
                 transform.LookAt(targetPosition);
             }
@@ -112,7 +122,7 @@ public class PlayerCamera : MonoBehaviour
 
         else 
         {
-            tiltAngle = 0;
+            tiltAngle = defaultTiltAngle;
             orbiting = false;
             movingOrbit = false;
             scrollingHeight = false;
@@ -120,8 +130,8 @@ public class PlayerCamera : MonoBehaviour
             // CAMERA ZOOM
             if (mouseWheel != 0)
             {
-                cameraDist -= mouseWheel * zoomSpeed;
-                cameraDist = Mathf.Clamp(cameraDist, maxZoom, minZoom);
+                zoom -= mouseWheel * zoomSpeed;
+                zoom = Mathf.Clamp(zoom, maxZoom, minZoom);
             }
         }
     }

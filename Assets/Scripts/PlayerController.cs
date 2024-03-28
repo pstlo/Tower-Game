@@ -9,14 +9,17 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private Transform spawnPoint;
     [SerializeField] private GameObject playerCameraPrefab;
     [SerializeField] private TMP_Text playerNameText; 
+
+    [SerializeField] private Collider rightFistCollider; 
     
     // CONSTANTS
     [SerializeField] private float moveSpeed = 10f; 
     [SerializeField] private float jumpForce = 5f; 
     [SerializeField] private float punchForce = 5f; 
-    [SerializeField] private float punchRange = 2f; 
-    [SerializeField] private float punchCooldown = 3f;
-    [SerializeField] private float punchMoveSpeedModifier = 0.4f;
+    [SerializeField] private float punchRange = 1f; 
+    [SerializeField] private float punchMoveSpeedModifier = 0.4f; // MOVEMENT SPEED % DURING PUNCH
+    [SerializeField] private float punchDuration = 0.75f; // DELAY BEFORE ACTUAL HITBOX THROWN
+    [SerializeField] private float punchCooldown = 1.5f; // LENGTH OF ANIMATION SECONDS
 
 
     
@@ -25,7 +28,7 @@ public class PlayerController : NetworkBehaviour
     private PlayerCamera playerCamera;
     private Animator animator;
     
-    private string playerName; // USE NETWORK VAR public NetworkVariable<FixedString128Bytes> playerName = new NetworkVariable<FixedString128Bytes>("DefaultUserName", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    private string playerName; 
     private float playerNameOffset = 1.5f;
 
     Vector3 towerCenter;
@@ -33,7 +36,8 @@ public class PlayerController : NetworkBehaviour
     // STATES
     private bool isPaused = false;
     private bool isGrounded = true;
-    private bool punching;
+
+    private bool punching = false;
     private float lastPunchTime; 
     private float speed;
 
@@ -66,6 +70,8 @@ public class PlayerController : NetworkBehaviour
             playerNameText.transform.localPosition = Vector3.up * playerNameOffset;
             UpdateNameTextRpc(playerName);
 
+            rightFistCollider.enabled = false;
+
             Respawn();
         }
     }
@@ -96,16 +102,14 @@ public class PlayerController : NetworkBehaviour
             // PUNCHING
             if (Input.GetMouseButtonDown(0) && !Input.GetKey(KeyCode.LeftShift) && !Input.GetKey(KeyCode.RightShift))
             {
+                // START PUNCH
                 if (isGrounded && Time.time - lastPunchTime >= punchCooldown)
                 {
                     lastPunchTime = Time.time;
                     punching = true;
-                    animator.SetTrigger("Punch");
-
-                    //if (IsServer) {Punch();}
-                    //else {PunchRpc();}
-
-                    PunchRpc();
+                    rightFistCollider.enabled = true;
+                    animator.SetTrigger("Punch"); 
+                    Debug.Log(" Punch: animation start ");
                 }
             }
 
@@ -131,8 +135,16 @@ public class PlayerController : NetworkBehaviour
             return;
         }
 
-        if (punching && Time.time - lastPunchTime >= punchCooldown) {punching = false;}
+        // END PUNCH
+        if (punching && Time.time - lastPunchTime >= punchCooldown)  
+        {
+            punching = false;
+            rightFistCollider.enabled = false;
+            Debug.Log(" Punch: animation end ");
+        }
 
+
+        // MOVE SPEED
         if (punching) {speed = moveSpeed * punchMoveSpeedModifier;}
         else {speed = moveSpeed;}
 
@@ -188,6 +200,12 @@ public class PlayerController : NetworkBehaviour
             isGrounded = true;
             rb.angularVelocity = Vector3.zero;
         } 
+
+        if (punching && collision.gameObject.CompareTag("Player"))
+        {
+            PlayerController controller = collision.gameObject.GetComponent<PlayerController>();
+            if (controller != null && controller.gameObject != gameObject) {controller.PunchedRpc(transform.position);}
+        }
     }
 
 
@@ -233,20 +251,6 @@ public class PlayerController : NetworkBehaviour
     }
 
 
-    private void Punch()
-    {
-        if (!IsLocalPlayer) {return;}
-        foreach (Collider hitCollider in Physics.OverlapSphere(transform.position, punchRange))
-        {
-            if (hitCollider.gameObject != gameObject && hitCollider.CompareTag("Player"))
-            {
-                PlayerController controller = hitCollider.gameObject.GetComponent<PlayerController>();
-                Debug.Log(GetName() + " threw a punch");
-                controller.PunchedRpc(transform.position);
-            }
-        }
-    }
-
 
     public void Punched(Vector3 punchOrigin)
     {
@@ -257,8 +261,6 @@ public class PlayerController : NetworkBehaviour
         Debug.Log(GetName() + " received a punch");
     }
 
-    [Rpc(SendTo.Everyone)]
-    private void PunchRpc() {Punch();}
 
     [Rpc(SendTo.Everyone)]
     private void PunchedRpc(Vector3 punchOrigin) {Punched(punchOrigin);}
