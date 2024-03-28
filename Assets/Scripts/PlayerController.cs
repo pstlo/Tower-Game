@@ -102,8 +102,10 @@ public class PlayerController : NetworkBehaviour
                     punching = true;
                     animator.SetTrigger("Punch");
 
-                    if (IsServer) {Punch();}
-                    else {PunchRpc();}
+                    //if (IsServer) {Punch();}
+                    //else {PunchRpc();}
+
+                    PunchRpc();
                 }
             }
 
@@ -233,27 +235,31 @@ public class PlayerController : NetworkBehaviour
 
     private void Punch()
     {
+        if (!IsLocalPlayer) {return;}
         foreach (Collider hitCollider in Physics.OverlapSphere(transform.position, punchRange))
         {
             if (hitCollider.gameObject != gameObject && hitCollider.CompareTag("Player"))
             {
-                PlayerController playerController = hitCollider.gameObject.GetComponent<PlayerController>();
+                PlayerController controller = hitCollider.gameObject.GetComponent<PlayerController>();
                 Debug.Log(GetName() + " threw a punch");
-                playerController.Punched(punchForce, transform.position);
+                controller.PunchedRpc(transform.position);
             }
         }
     }
 
 
-    [Rpc(SendTo.Everyone)]
-    private void PunchRpc() {Punch();}
-
-
-    public void Punched(float punchForce, Vector3 punchOrigin)
+    public void Punched(Vector3 punchOrigin)
     {
+        if (!IsLocalPlayer) {return;}
         Rigidbody rb = GetComponent<Rigidbody>();
         Vector3 direction = (transform.position - punchOrigin).normalized;
         rb.AddForce(direction * punchForce, ForceMode.Impulse);
         Debug.Log(GetName() + " received a punch");
     }
+
+    [Rpc(SendTo.Everyone)]
+    private void PunchRpc() {Punch();}
+
+    [Rpc(SendTo.Everyone)]
+    private void PunchedRpc(Vector3 punchOrigin) {Punched(punchOrigin);}
 }
