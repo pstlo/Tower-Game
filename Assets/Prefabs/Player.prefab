@@ -625,7 +625,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 4286597678
+  GlobalObjectIdHash: 2103378795
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -774,10 +774,11 @@ MonoBehaviour:
   moveSpeed: 10
   jumpForce: 5
   punchForce: 5
-  punchRange: 2
   punchMoveSpeedModifier: 0.4
   punchDuration: 0.75
+  punchHitboxDuration: 1.1
   punchCooldown: 1.5
+  aimSensitivity: 4000
 --- !u!1 &3305057755091655512
 GameObject:
   m_ObjectHideFlags: 0

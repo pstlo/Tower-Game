@@ -5,30 +5,37 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private Transform player;
     [SerializeField] private Transform tower;
     
-    [SerializeField] private float maxZoom = 20;
-    [SerializeField] private float minZoom = 100;
-    [SerializeField] private float zoomSpeed = 5;
-    [SerializeField] private float defaultZoom = 30;
+    [SerializeField] private float maxZoom = 20f;
+    [SerializeField] private float minZoom = 100f;
+    [SerializeField] private float zoomSpeed = 5f;
+    [SerializeField] private float defaultZoom = 30f;
+    [SerializeField] private float aimZoom = 0.75f;
 
-    [SerializeField] private float defaultTiltAngle = 0;
-    [SerializeField] private float maxTilt = 60;
-    [SerializeField] private float minTilt = -60;
-    [SerializeField] private float tiltSpeed = 2;
+    [SerializeField] private float defaultTiltAngle = 0f;
+    [SerializeField] private float maxTilt = 60f;
+    [SerializeField] private float minTilt = -60f;
+    [SerializeField] private float tiltSpeed = 2f;
 
-    [SerializeField] private float orbitSpeed = 2;
+    [SerializeField] private float orbitSpeed = 4f;
 
     [SerializeField] private int maxHeight = 100;
     [SerializeField] private int minHeight = 0;
-    [SerializeField] private float scrollingHeightSpeed = 3;
+    [SerializeField] private float scrollingHeightSpeed = 3f;
   
 
     private float tiltAngle;
-    private float orbitAngle = 0;
-    private float zoom;
+    private float orbitAngle = 0f;
+    
     private float cameraHeight;
+
     private bool orbiting = false;
     private bool movingOrbit = false;
     private bool scrollingHeight = false;
+
+    private float zoom;
+    private float preAimZoom;
+    private bool aiming = false;
+    private bool aimZoomSet = false;
 
     private Vector3 towerPosition;
 
@@ -48,9 +55,25 @@ public class PlayerCamera : MonoBehaviour
             return;
         }
 
+        
+
         towerPosition.y = player.position.y;
         if (!scrollingHeight) {cameraHeight = towerPosition.y;}
 
+        if (!aimZoomSet && aiming) 
+        {
+            preAimZoom = zoom;
+            zoom *= aimZoom;
+            aimZoomSet = true;
+        }
+
+        else if (!aiming && aimZoomSet)
+        {
+            zoom = preAimZoom;
+            aimZoomSet = false;
+        }
+
+        zoom = Mathf.Clamp(zoom, maxZoom, minZoom);
 
         if (!orbiting)
         {
@@ -128,15 +151,13 @@ public class PlayerCamera : MonoBehaviour
             scrollingHeight = false;
 
             // CAMERA ZOOM
-            if (mouseWheel != 0)
-            {
-                zoom -= mouseWheel * zoomSpeed;
-                zoom = Mathf.Clamp(zoom, maxZoom, minZoom);
-            }
+            if (mouseWheel != 0) {zoom -= mouseWheel * zoomSpeed;}
         }
     }
 
 
     public void SetPlayer(Transform player) {this.player = player;}
+
+    public void ToggleAiming(bool active) {aiming = active;}
 
 }
