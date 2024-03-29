@@ -19,15 +19,13 @@ public class PlayerController : NetworkBehaviour
     // COMBAT
     [SerializeField] private float punchForce = 10f; 
     [SerializeField] private float punchMoveSpeedModifier = 0.4f; 
-    [SerializeField] private float punchDuration = 0.75f; 
-    [SerializeField] private float punchHitboxDuration = 1.1f; 
-    [SerializeField] private float punchAnimationDuration = 1.5f;
+    [SerializeField] private float punchDuration = 0.4f; 
+    [SerializeField] private float punchHitboxDuration = 0.75f; 
+    [SerializeField] private float punchAnimationDuration = 0.8f;
 
     // AIMING
     [SerializeField] private float aimSensitivity = 3000f;
     [SerializeField] private float aimMovementSpeedMultiplier = 0.75f; 
-
-
     
     // COMPONENTS
     private Rigidbody rb; 
@@ -47,6 +45,7 @@ public class PlayerController : NetworkBehaviour
     private float lastPunchTime; 
 
     private bool aiming;
+    //private bool blocking;
 
 
     private float speed;
@@ -101,17 +100,34 @@ public class PlayerController : NetworkBehaviour
         {
 
             // AIMING
-            if (Input.GetMouseButton(1) && !Input.GetKey(KeyCode.LeftShift) && !Input.GetKey(KeyCode.RightShift))
+            if (aiming) 
             {
-                aiming = true;
                 Vector3 rotation = new Vector3(0f, Input.GetAxis("Mouse X") * aimSensitivity, 0f);
-                transform.Rotate(rotation * Time.deltaTime, Space.World);
-                
+                transform.Rotate(rotation * Time.deltaTime);
             }
 
-            else {aiming = false;}
+            if (Input.GetMouseButtonDown(1) && !Input.GetKey(KeyCode.C))
+            {
+                aiming = true;
+                playerCamera.ToggleAiming(aiming);
+                animator.SetFloat("Speed", 0.5f);
+            }
+            
+            if (Input.GetMouseButtonUp(1)) 
+            {
+                aiming = false;
+                playerCamera.ToggleAiming(aiming);
+            }
 
-            playerCamera.ToggleAiming(aiming);
+
+            // BLOCKING 
+            /*
+            if (Input.GetMouseButton(2))
+            {
+                blocking = true;
+                //animator.SetTrigger("Block");
+            }
+            */
 
 
             // JUMPING
@@ -119,13 +135,12 @@ public class PlayerController : NetworkBehaviour
             {
                 rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
                 isGrounded = false;
-
-                // JUMP ANIMATION
                 animator.SetTrigger("Jump");
             }
 
+
             // PUNCHING
-            if (Input.GetMouseButtonDown(0) && !Input.GetKey(KeyCode.LeftShift) && !Input.GetKey(KeyCode.RightShift))
+            if (Input.GetMouseButtonDown(0) && !Input.GetKey(KeyCode.C))
             {
                 // START PUNCH
                 if (isGrounded && Time.time - lastPunchTime >= punchAnimationDuration)
@@ -135,7 +150,6 @@ public class PlayerController : NetworkBehaviour
                     animator.SetTrigger("Punch"); 
                 }
             }
-
         }
 
         // NAMETAG
@@ -202,15 +216,25 @@ public class PlayerController : NetworkBehaviour
             Vector3 verticalMove = -verticalInput * circleCenterToPlayer.normalized;
             Vector3 movement = horizontalMove + verticalMove;
 
+            // MOVING
             if (movement.magnitude > 0)
             {
                 rb.MovePosition(rb.position + movement * speed * Time.deltaTime);
-                animator.SetFloat("Speed", 0.5f);
-                if (!aiming) {transform.rotation = Quaternion.LookRotation(movement.normalized);}
+                
+                if (!aiming) 
+                {
+                    animator.SetFloat("Speed", 1);
+                    transform.rotation = Quaternion.LookRotation(movement.normalized);
+                }
                 
             }
 
-            else {animator.SetFloat("Speed", 0); }// prob should not be instant
+            // IDLE
+            else 
+            {
+                if (!aiming) {animator.SetFloat("Speed", 0);} // prob should not be instant
+            } 
+
 
 
             if (rb.position.y < -5f) {Respawn();}
@@ -292,7 +316,6 @@ public class PlayerController : NetworkBehaviour
         spawnPoint.position = pos;
         spawnPoint.rotation = rot;
     }
-
 
 
     public void Punched(Vector3 puncher)

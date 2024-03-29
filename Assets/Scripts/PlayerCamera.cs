@@ -21,10 +21,13 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private int maxHeight = 100;
     [SerializeField] private int minHeight = 0;
     [SerializeField] private float scrollingHeightSpeed = 3f;
+
+    [SerializeField] private float zoomSmoothTime = 1f;
   
 
     private float tiltAngle;
     private float orbitAngle = 0f;
+    private float currentZoomVelocity;
     
     private float cameraHeight;
 
@@ -47,7 +50,7 @@ public class PlayerCamera : MonoBehaviour
         zoom = defaultZoom;
     }
     
-     void Update()
+    void Update()
     {
         if (player == null || tower == null) 
         {
@@ -55,25 +58,33 @@ public class PlayerCamera : MonoBehaviour
             return;
         }
 
-        
-
         towerPosition.y = player.position.y;
         if (!scrollingHeight) {cameraHeight = towerPosition.y;}
 
-        if (!aimZoomSet && aiming) 
+
+
+        if (!aimZoomSet && aiming)
         {
             preAimZoom = zoom;
-            zoom *= aimZoom;
             aimZoomSet = true;
         }
 
-        else if (!aiming && aimZoomSet)
+        if (aiming)
         {
-            zoom = preAimZoom;
-            aimZoomSet = false;
+            if (aimZoom * defaultZoom < zoom) {zoom = Mathf.SmoothDamp(zoom, aimZoom * defaultZoom, ref currentZoomVelocity, zoomSmoothTime);}
+        }
+
+        if (!aiming && aimZoomSet)
+        {
+            zoom = Mathf.SmoothDamp(zoom, preAimZoom, ref currentZoomVelocity, zoomSmoothTime);
+            if (Mathf.Abs(preAimZoom-zoom) <= 1)
+            {
+                aimZoomSet = false;
+            }
         }
 
         zoom = Mathf.Clamp(zoom, maxZoom, minZoom);
+
 
         if (!orbiting)
         {
@@ -85,12 +96,11 @@ public class PlayerCamera : MonoBehaviour
             Quaternion rotation = Quaternion.Euler(tiltAngle, transform.rotation.eulerAngles.y, transform.rotation.eulerAngles.z);
             transform.rotation = rotation;
         }
-        
-        
+
 
         float mouseWheel = Input.GetAxis("Mouse ScrollWheel");
 
-        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+        if (Input.GetKey(KeyCode.C))
         {
             Vector3 targetPosition = towerPosition;
 
@@ -123,16 +133,12 @@ public class PlayerCamera : MonoBehaviour
                 orbitAngle = Mathf.Atan2(offset.x, offset.z) * Mathf.Rad2Deg;
             }
 
-            if (Input.GetMouseButtonUp(0)) 
-            {
-                movingOrbit = false;
-            }
+            if (Input.GetMouseButtonUp(0)) {movingOrbit = false;}
 
             if (movingOrbit)
             {
                 float mouseX = Input.GetAxis("Mouse X");
                 orbitAngle += mouseX * orbitSpeed;
-               
             }
 
             if (orbiting)

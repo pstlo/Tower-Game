@@ -773,12 +773,13 @@ MonoBehaviour:
   rightFistCollider: {fileID: 7489416277891556059}
   moveSpeed: 10
   jumpForce: 5
-  punchForce: 5
+  punchForce: 6
   punchMoveSpeedModifier: 0.4
-  punchDuration: 0.75
-  punchHitboxDuration: 1.1
-  punchCooldown: 1.5
+  punchDuration: 0.3
+  punchHitboxDuration: 0.65
+  punchAnimationDuration: 0.8
   aimSensitivity: 4000
+  aimMovementSpeedMultiplier: 0.75
 --- !u!1 &3305057755091655512
 GameObject:
   m_ObjectHideFlags: 0
@@ -1347,7 +1348,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.1
+  m_Radius: 0.11
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &6345506315311214545
 GameObject:
