@@ -82,6 +82,7 @@ public class GameManager : NetworkBehaviour
         isStarted = false;
 
         CancelInvoke(nameof(RandomSpawnBoulder));
+        UIManager.Instance.ToggleGameOverUI(false);
         
         // DESPAWN ALL BOULDERS
     }
