@@ -322,7 +322,7 @@ public class PlayerController : NetworkBehaviour
 
     private void AimHandler()
     {
-        if (aiming && !towerView) 
+        if (aiming && towerView) 
         {
             Vector3 rotation = new Vector3(0f, Input.GetAxis("Mouse X") * aimSensitivity, 0f);
             transform.Rotate(rotation * Time.deltaTime);
