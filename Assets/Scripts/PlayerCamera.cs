@@ -5,13 +5,14 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private Transform player;
     [SerializeField] private Transform tower;
     
+    // TOWER VIEW
     [SerializeField] private float maxZoom = 20f;
     [SerializeField] private float minZoom = 100f;
     [SerializeField] private float zoomSpeed = 5f;
-    [SerializeField] private float defaultZoom = 30f;
+    [SerializeField] private float defaultZoom = 25f;
     [SerializeField] private float aimZoom = 0.75f;
 
-    [SerializeField] private float defaultTiltAngle = 0f;
+    [SerializeField] private float defaultTiltAngle = 15f;
     [SerializeField] private float maxTilt = 60f;
     [SerializeField] private float minTilt = -60f;
     [SerializeField] private float tiltSpeed = 2f;
@@ -21,8 +22,9 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private int maxHeight = 100;
     [SerializeField] private int minHeight = 0;
     [SerializeField] private float scrollingHeightSpeed = 3f;
+    [SerializeField] private float defaultHeight = 3f;
 
-    [SerializeField] private float zoomSmoothTime = 1f;
+    [SerializeField] private float zoomSmoothTime = 0.5f;
   
 
     private float tiltAngle;
@@ -39,9 +41,9 @@ public class PlayerCamera : MonoBehaviour
     private float preAimZoom;
     private bool aiming = false;
     private bool aimZoomSet = false;
+    private bool towerView = true;
 
     private Vector3 towerPosition;
-
 
     void Start() 
     {
@@ -58,16 +60,48 @@ public class PlayerCamera : MonoBehaviour
             return;
         }
 
+
+
+        if (towerView) {TowerView();}
+        else {PlayerView();}
+        
+    }
+
+
+    public void SetPlayer(Transform player) {this.player = player;}
+
+    public void ToggleAiming(bool active) {aiming = active;}
+
+
+    private void PlayerView()
+    {
+        float offsetX = 0f;
+        float offsetY = 3f;
+        float playerViewCameraDist = -15f;
+        
+        Vector3 cameraOffset = new Vector3(offsetX, offsetY, playerViewCameraDist); 
+        Vector3 targetPosition = player.position + player.TransformDirection(cameraOffset);
+        transform.position = targetPosition;
+        transform.rotation = player.rotation;
+    }
+
+
+
+
+
+    private void TowerView()
+    {
         towerPosition.y = player.position.y;
-        if (!scrollingHeight) {cameraHeight = towerPosition.y;}
-
-
+        if (!scrollingHeight) {cameraHeight = towerPosition.y + defaultHeight;}
 
         if (!aimZoomSet && aiming)
         {
             preAimZoom = zoom;
             aimZoomSet = true;
         }
+
+
+        Vector3 targetPosition;
 
         if (aiming)
         {
@@ -89,7 +123,7 @@ public class PlayerCamera : MonoBehaviour
         if (!orbiting)
         {
             Vector3 directionToPlayer = (player.position - towerPosition).normalized;
-            Vector3 targetPosition = towerPosition + directionToPlayer * zoom;
+            targetPosition = towerPosition + directionToPlayer * zoom;
             targetPosition.y = cameraHeight;
             transform.position = targetPosition;
             transform.LookAt(player);
@@ -102,7 +136,7 @@ public class PlayerCamera : MonoBehaviour
 
         if (Input.GetKey(KeyCode.C))
         {
-            Vector3 targetPosition = towerPosition;
+            targetPosition = towerPosition;
 
             // HEIGHT SCROLL
             if (mouseWheel != 0) 
@@ -143,9 +177,12 @@ public class PlayerCamera : MonoBehaviour
 
             if (orbiting)
             {
-                Vector3 orbitPosition = targetPosition + Quaternion.Euler(tiltAngle, orbitAngle, zoom) * new Vector3(0f, 0f, zoom);
+                Vector3 orbitPosition = targetPosition + Quaternion.Euler(0f, orbitAngle, zoom) * new Vector3(0f, 0f, zoom);
+                orbitPosition.y += defaultHeight;
                 transform.position = orbitPosition;
                 transform.LookAt(targetPosition);
+                Quaternion rotation = Quaternion.Euler(tiltAngle, transform.rotation.eulerAngles.y, transform.rotation.eulerAngles.z);
+                transform.rotation = rotation;
             }
         }
 
@@ -161,9 +198,5 @@ public class PlayerCamera : MonoBehaviour
         }
     }
 
-
-    public void SetPlayer(Transform player) {this.player = player;}
-
-    public void ToggleAiming(bool active) {aiming = active;}
-
+    public void SetTowerView(bool active) {towerView = active;}
 }

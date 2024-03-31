@@ -49,9 +49,10 @@ public class PlayerController : NetworkBehaviour
     private float lastPunchTime; 
     private bool aiming;
     private float speed;
+    private bool towerView = true;
     public NetworkVariable<bool> blocking = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
-
+    private float mouseSensitivity = 10f;
 
     void Start()
     {
@@ -107,6 +108,12 @@ public class PlayerController : NetworkBehaviour
             BlockHandler();
             JumpHandler();   
             PunchStartHandler();
+            
+            if (!towerView) 
+            {            
+                float mouseX = Input.GetAxis("Mouse X");
+                transform.Rotate(Vector3.up, mouseX * mouseSensitivity);
+            }
         }
 
         // NAMETAG
@@ -114,6 +121,8 @@ public class PlayerController : NetworkBehaviour
         playerNameText.rectTransform.Rotate(0, 180, 0);
 
         towerCenter.y = gameObject.transform.position.y;
+
+        ViewHandler();
     }
 
 
@@ -137,12 +146,25 @@ public class PlayerController : NetworkBehaviour
         {
             float horizontalInput = Input.GetAxis("Horizontal");
             float verticalInput = Input.GetAxis("Vertical");
+            Vector3 movement;
+            Vector3 horizontalMove;
+            Vector3 verticalMove;
 
-            Vector3 circleCenterToPlayer = transform.position - towerCenter;
-            Vector3 perpendicularToCircle = Vector3.Cross(circleCenterToPlayer, Vector3.up);
-            Vector3 horizontalMove = horizontalInput * (Quaternion.AngleAxis(0, Vector3.up) * perpendicularToCircle.normalized);
-            Vector3 verticalMove = -verticalInput * circleCenterToPlayer.normalized;
-            Vector3 movement = horizontalMove + verticalMove;
+            if (towerView)
+            {
+                Vector3 circleCenterToPlayer = transform.position - towerCenter;
+                Vector3 perpendicularToCircle = Vector3.Cross(circleCenterToPlayer, Vector3.up);
+                horizontalMove = horizontalInput * (Quaternion.AngleAxis(0, Vector3.up) * perpendicularToCircle.normalized);
+                verticalMove = -verticalInput * circleCenterToPlayer.normalized;
+                movement = horizontalMove + verticalMove;
+            }
+
+            else 
+            {
+                Vector3 forward = transform.forward * verticalInput;
+                Vector3 right = transform.right * horizontalInput;
+                movement = forward + right;
+            }
 
             // MOVING
             if (movement.magnitude > 0)
@@ -152,7 +174,9 @@ public class PlayerController : NetworkBehaviour
                 if (!aiming) 
                 {
                     animator.SetFloat("Speed", 1);
-                    transform.rotation = Quaternion.LookRotation(movement.normalized);
+                    if (towerView) {transform.rotation = Quaternion.LookRotation(movement.normalized);}
+
+
                 }
             }
 
@@ -298,7 +322,7 @@ public class PlayerController : NetworkBehaviour
 
     private void AimHandler()
     {
-        if (aiming) 
+        if (aiming && !towerView) 
         {
             Vector3 rotation = new Vector3(0f, Input.GetAxis("Mouse X") * aimSensitivity, 0f);
             transform.Rotate(rotation * Time.deltaTime);
@@ -386,9 +410,21 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
+    private void ViewHandler()
+    {
+        // TOGGLE TOWER VIEW
+        if (Input.GetKeyDown(KeyCode.CapsLock)) 
+        {
+            towerView = !towerView;
+            playerCamera.SetTowerView(towerView);
+            UIManager.Instance.ToggleTowerCameraIndicator(towerView);
+        }
+    }
+
     private void DisableColliders()
     {
         Collider[] colliders = GetComponentsInChildren<Collider>();
         foreach (Collider collider in colliders) {collider.enabled = false;}
     }
+
 }

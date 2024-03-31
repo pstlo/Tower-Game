@@ -37,6 +37,9 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject gameOverUI;
     [SerializeField] private TMP_Text winnerText;
 
+    // In Game UI
+    [SerializeField] private TMP_Text towerCameraIndicator;
+
     
     void Start()
     {
@@ -76,4 +79,5 @@ public class UIManager : MonoBehaviour
     public void ToggleNetworkUI(bool active) {networkUI.SetActive(active);}
     public void TogglePauseUI(bool active) {pauseMenuUI.SetActive(active);}
     public void ToggleGameOverUI(bool active) {gameOverUI.SetActive(active);}
+    public void ToggleTowerCameraIndicator(bool active) {towerCameraIndicator.gameObject.SetActive(active);}
 }
