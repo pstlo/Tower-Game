@@ -18,29 +18,31 @@ public class GameManager : NetworkBehaviour
     private float startTextDuration = 2f;
 
     [SerializeField] private string startMessage = "Go!";
-
+    [SerializeField] private GameObject tower;
     [SerializeField] private GameObject boulderPrefab;
+    [SerializeField] private GameObject stepPrefab;
 
 
     // BOULDER SPAWNING
-    [SerializeField] private GameObject tower;
+    
     private Vector3 cylinderCenter;
     private float boulderSpawnRadius;
+    private float outerBoulderSpawnRadius;
     private float boulderSpawnHeight;
-
-    // should not spawn inside tower
-
     private float minSpawnDelay = 1f;
     private float maxSpawnDelay = 5f;
+
 
     void Start() 
     {
         Instance = this;
+
         // Boulder spawn area
         cylinderCenter = tower.transform.position;
         cylinderCenter.y = 0;
         boulderSpawnHeight = tower.transform.localScale.y;
         boulderSpawnRadius = tower.transform.localScale.x;
+        outerBoulderSpawnRadius = boulderSpawnRadius + stepPrefab.transform.localScale.x * 0.8f;
     }
 
     void Update()
@@ -59,7 +61,7 @@ public class GameManager : NetworkBehaviour
     {
         if (IsOwner)
         {
-            GameLobby.Instance.RespawnAllPlayers(); // this not workin 0.00005% the time 
+            GameLobby.Instance.RespawnAllPlayers();
             GameLobby.Instance.UpdatePlayerNames();
 
             countdownTimer.Value = 5f;
@@ -126,14 +128,21 @@ public class GameManager : NetworkBehaviour
     }
 
     public void RandomSpawnBoulder()
+{
+    if (IsOwner)
     {
-        if (IsOwner)
+        Vector2 randomPointOnBase = Random.insideUnitCircle * (boulderSpawnRadius + outerBoulderSpawnRadius); 
+        Vector3 spawnPosition = new Vector3(randomPointOnBase.x, 0f, randomPointOnBase.y) + cylinderCenter;
+        Vector3 towerCenterToSpawn = spawnPosition - cylinderCenter;
+        towerCenterToSpawn.y = 0f;
+        if (towerCenterToSpawn.magnitude <= tower.transform.localScale.x / 2f)
         {
-            Vector2 randomPointOnBase = Random.insideUnitCircle * boulderSpawnRadius;
-            Vector3 spawnPosition = new Vector3(randomPointOnBase.x, 0f, randomPointOnBase.y) + cylinderCenter;
-            float randomHeight = Random.Range(0f, boulderSpawnHeight);
-            spawnPosition.y = randomHeight;
-            SpawnBoulder(spawnPosition);
+            towerCenterToSpawn = towerCenterToSpawn.normalized * (tower.transform.localScale.x / 2f + 0.1f);
+            spawnPosition = cylinderCenter + towerCenterToSpawn;
         }
+        float randomHeight = Random.Range(0f, boulderSpawnHeight);
+        spawnPosition.y = randomHeight;
+        SpawnBoulder(spawnPosition);
     }
+}
 }

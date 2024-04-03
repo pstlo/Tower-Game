@@ -38,6 +38,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TMP_Text winnerText;
 
     // In Game UI
+    [SerializeField] private GameObject inGameUI;
     [SerializeField] private TMP_Text towerCameraIndicator;
 
     
@@ -64,13 +65,13 @@ public class UIManager : MonoBehaviour
         ToggleStartUI(false);
         ToggleCountdownTimer(false);
         TogglePauseUI(false);       
+        ToggleTowerCameraIndicator(false);
     }
 
 
     public void SetJoinCodeText(string joinCode) {joinCodeText.text = joinCode;}
     public void SetWinnerText(string winner) {winnerText.text = winner;}
     public void SetCountdownTimerText(string timer) {startTimerText.text = timer;}
-
     public void ToggleAuthenticateUI(bool active) {authenticateUI.SetActive(active);}
     public void ToggleJoinCode(bool active) {joinCodeText.gameObject.SetActive(active);}
     public void ToggleStartUI(bool active) {startGameUI.SetActive(active);}
@@ -80,4 +81,6 @@ public class UIManager : MonoBehaviour
     public void TogglePauseUI(bool active) {pauseMenuUI.SetActive(active);}
     public void ToggleGameOverUI(bool active) {gameOverUI.SetActive(active);}
     public void ToggleTowerCameraIndicator(bool active) {towerCameraIndicator.gameObject.SetActive(active);}
+    public void ToggleInGameUI(bool active) {inGameUI.SetActive(active);}
+    public void ToggleCursor(bool active) {Cursor.visible = active;}
 }

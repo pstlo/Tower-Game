@@ -24,7 +24,12 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private float scrollingHeightSpeed = 3f;
     [SerializeField] private float defaultHeight = 3f;
 
-    [SerializeField] private float zoomSmoothTime = 0.5f;
+    [SerializeField] private float zoomSmoothTime = 0.1f;
+
+    // PLAYER VIEW
+    [SerializeField] private float defaultPlayerZoom = -15;
+    [SerializeField] private float minPlayerZoom = -40;
+    [SerializeField] private float maxPlayerZoom = -1;
   
 
     private float tiltAngle;
@@ -38,6 +43,7 @@ public class PlayerCamera : MonoBehaviour
     private bool scrollingHeight = false;
 
     private float zoom;
+    private float playerZoom;
     private float preAimZoom;
     private bool aiming = false;
     private bool aimZoomSet = false;
@@ -50,6 +56,8 @@ public class PlayerCamera : MonoBehaviour
         towerPosition = tower.position;
         tiltAngle = defaultTiltAngle;
         zoom = defaultZoom;
+        playerZoom = defaultPlayerZoom;
+        UIManager.Instance.ToggleTowerCameraIndicator(towerView);
     }
     
     void Update()
@@ -60,11 +68,8 @@ public class PlayerCamera : MonoBehaviour
             return;
         }
 
-
-
         if (towerView) {TowerView();}
         else {PlayerView();}
-        
     }
 
 
@@ -75,14 +80,18 @@ public class PlayerCamera : MonoBehaviour
 
     private void PlayerView()
     {
+        float mouseWheel = Input.GetAxis("Mouse ScrollWheel");
+        if (mouseWheel != 0) {playerZoom += mouseWheel * zoomSpeed;}
+        playerZoom = Mathf.Clamp(playerZoom,minPlayerZoom,maxPlayerZoom);
+
         float offsetX = 0f;
         float offsetY = 3f;
-        float playerViewCameraDist = -15f;
-        
-        Vector3 cameraOffset = new Vector3(offsetX, offsetY, playerViewCameraDist); 
+
+        Vector3 cameraOffset = new Vector3(offsetX, offsetY, playerZoom); 
         Vector3 targetPosition = player.position + player.TransformDirection(cameraOffset);
         transform.position = targetPosition;
         transform.rotation = player.rotation;
+        transform.LookAt(player.transform);
     }
 
 
@@ -198,5 +207,9 @@ public class PlayerCamera : MonoBehaviour
         }
     }
 
-    public void SetTowerView(bool active) {towerView = active;}
+    public void SetTowerView(bool active) 
+    {
+        towerView = active;
+        UIManager.Instance.ToggleCursor(active);
+    }
 }

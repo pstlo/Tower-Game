@@ -121,4 +121,4 @@ MonoBehaviour:
   minHeight: 0
   scrollingHeightSpeed: 3
   defaultHeight: 3
-  zoomSmoothTime: 0.5
+  zoomSmoothTime: 0.1

@@ -683,7 +683,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 1
-  m_Constraints: 80
+  m_Constraints: 112
   m_CollisionDetection: 1
 --- !u!114 &3541845458953595774
 MonoBehaviour:
@@ -846,8 +846,8 @@ MonoBehaviour:
   jumpForce: 5
   punchForce: 6
   punchMoveSpeedModifier: 0.4
-  punchDuration: 0.3
-  punchHitboxDuration: 0.75
+  punchHitboxStart: 0.3
+  punchHitboxEnd: 0.75
   punchAnimationDuration: 0.76
   blockMovementSpeedMultiplier: 0.25
   aimSensitivity: 4000
@@ -871,15 +871,6 @@ MonoBehaviour:
   leftFist: {fileID: 7942465017556000857}
   rightArm: {fileID: 4665848153499913816}
   leftArm: {fileID: 2886190121127690578}
-  rightLeg: {fileID: 1997887205064048892}
-  leftLeg: {fileID: 3871569317185398447}
-  rightThigh: {fileID: 8534036293274262767}
-  leftThigh: {fileID: 5842848703344656636}
-  rightFoot: {fileID: 2358221167746429162}
-  leftFoot: {fileID: 5533139754930103823}
-  leftShoulder: {fileID: 2597785478954119804}
-  rightShoulder: {fileID: 8831429334056981341}
-  head: {fileID: 3338759659123746092}
 --- !u!136 &-6210540476501608943
 CapsuleCollider:
   m_ObjectHideFlags: 0

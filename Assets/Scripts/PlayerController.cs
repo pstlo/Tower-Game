@@ -36,7 +36,6 @@ public class PlayerController : NetworkBehaviour
     private Animator animator;
     public PlayerCollider playerCollider;
     
-
     private string playerName; 
     private float playerNameOffset = 1.5f;
 
@@ -50,9 +49,10 @@ public class PlayerController : NetworkBehaviour
     private bool aiming;
     private float speed;
     private bool towerView = true;
+    // private bool climbingStairs = true; // to do
     public NetworkVariable<bool> blocking = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
-    private float mouseSensitivity = 10f;
+    private float playerViewMouseSensitivity = 10f;
 
     void Start()
     {
@@ -112,7 +112,7 @@ public class PlayerController : NetworkBehaviour
             if (!towerView) 
             {            
                 float mouseX = Input.GetAxis("Mouse X");
-                transform.Rotate(Vector3.up, mouseX * mouseSensitivity);
+                transform.Rotate(Vector3.up, mouseX * playerViewMouseSensitivity);
             }
         }
 
@@ -141,7 +141,6 @@ public class PlayerController : NetworkBehaviour
         PunchHandler();
         MoveSpeedHandler();
 
-
         if (!paused && GameManager.Instance.CanMove())
         {
             float horizontalInput = Input.GetAxis("Horizontal");
@@ -150,20 +149,43 @@ public class PlayerController : NetworkBehaviour
             Vector3 horizontalMove;
             Vector3 verticalMove;
 
+            // INPUT
             if (towerView)
             {
+                /*if (climbingStairs)
+                {*/
                 Vector3 circleCenterToPlayer = transform.position - towerCenter;
                 Vector3 perpendicularToCircle = Vector3.Cross(circleCenterToPlayer, Vector3.up);
                 horizontalMove = horizontalInput * (Quaternion.AngleAxis(0, Vector3.up) * perpendicularToCircle.normalized);
                 verticalMove = -verticalInput * circleCenterToPlayer.normalized;
                 movement = horizontalMove + verticalMove;
+                //}
+
+                /*else 
+                {
+                    Vector3 right = transform.forward * verticalInput;
+                    Vector3 forward = transform.right * horizontalInput;
+                    movement = forward + right;
+                }*/
             }
 
             else 
             {
+                /*if (climbingStairs)
+                {
+                    Vector3 circleCenterToPlayer = transform.position - towerCenter;
+                    Vector3 perpendicularToCircle = Vector3.Cross(circleCenterToPlayer, Vector3.up);
+                    horizontalMove = horizontalInput * circleCenterToPlayer.normalized;
+                    verticalMove = verticalInput * (Quaternion.AngleAxis(0, Vector3.up) * perpendicularToCircle.normalized);
+                    movement = horizontalMove + verticalMove;
+                }
+
+                else
+                {*/
                 Vector3 forward = transform.forward * verticalInput;
                 Vector3 right = transform.right * horizontalInput;
                 movement = forward + right;
+                //}
             }
 
             // MOVING
@@ -174,9 +196,7 @@ public class PlayerController : NetworkBehaviour
                 if (!aiming) 
                 {
                     animator.SetFloat("Speed", 1);
-                    if (towerView) {transform.rotation = Quaternion.LookRotation(movement.normalized);}
-
-
+                    if (towerView) {transform.rotation = Quaternion.LookRotation(movement.normalized);} // && climbingStairs
                 }
             }
 
@@ -185,8 +205,6 @@ public class PlayerController : NetworkBehaviour
             {
                 if (!aiming) {animator.SetFloat("Speed", 0);} // prob should not be instant
             } 
-
-
 
             if (rb.position.y < -5f) {Respawn();}
         }
@@ -259,7 +277,11 @@ public class PlayerController : NetworkBehaviour
     }
 
 
-    private void SetPauseMenuActive(bool active) {UIManager.Instance.TogglePauseUI(active);}
+    private void SetPauseMenuActive(bool active) 
+    {
+        UIManager.Instance.TogglePauseUI(active);
+        UIManager.Instance.ToggleCursor(active);
+    }
 
 
     public void Leave()

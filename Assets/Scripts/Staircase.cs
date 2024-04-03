@@ -6,13 +6,14 @@ public class Staircase : MonoBehaviour
     [SerializeField] private GameObject tower;
     [SerializeField] private GameObject stepPrefab;
     [SerializeField] private int numStairs; // 368
+    [SerializeField] private float stairAngle = 10f;
 
 
     void Start()
     {
         Vector3 centerBottom = gameObject.transform.position;
-        float radius = 5f;
-        float angleDegrees = 10f;
+        float radius = tower.transform.localScale.x;
+        float angleDegrees = stairAngle;
         float angleRadians = angleDegrees * Mathf.PI / 180f;
 
         for (var i = 0; i < numStairs; i++)
