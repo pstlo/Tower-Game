@@ -41,13 +41,14 @@ public class PlayerController : NetworkBehaviour
 
     Vector3 towerCenter;
 
+    private float speed;
     private bool paused = false;
+    private bool aiming;
     private bool grounded = true;
     private bool punching = false;
     private bool punchHitboxStarted = false;
     private float lastPunchTime; 
-    private bool aiming;
-    private float speed;
+    
     private bool towerView = true;
     // private bool climbingStairs = true; // to do
     public NetworkVariable<bool> blocking = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
@@ -192,19 +193,12 @@ public class PlayerController : NetworkBehaviour
             if (movement.magnitude > 0)
             {
                 rb.MovePosition(rb.position + movement * speed * Time.deltaTime);
-                
-                if (!aiming) 
-                {
-                    animator.SetFloat("Speed", 1);
-                    if (towerView) {transform.rotation = Quaternion.LookRotation(movement.normalized);} // && climbingStairs
-                }
+                animator.SetBool("Moving",true);
+                if (!aiming && towerView) {transform.rotation = Quaternion.LookRotation(movement.normalized);} // && climbingStairs
             }
 
             // IDLE
-            else 
-            {
-                if (!aiming) {animator.SetFloat("Speed", 0);} // prob should not be instant
-            } 
+            else {animator.SetBool("Moving", false);} 
 
             if (rb.position.y < -5f) {Respawn();}
         }
@@ -234,6 +228,7 @@ public class PlayerController : NetworkBehaviour
         {
             grounded = true;
             rb.angularVelocity = Vector3.zero;
+            animator.SetBool("Grounded", grounded);
         } 
 
         // PUNCHING
@@ -354,13 +349,14 @@ public class PlayerController : NetworkBehaviour
         {
             aiming = true;
             playerCamera.ToggleAiming(aiming);
-            animator.SetFloat("Speed", 0.5f);
+            animator.SetBool("Aiming", true);
         }
         
         if (Input.GetMouseButtonUp(1)) 
         {
             aiming = false;
             playerCamera.ToggleAiming(aiming);
+            animator.SetBool("Aiming", false);
         }
     }
 
@@ -372,6 +368,7 @@ public class PlayerController : NetworkBehaviour
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             grounded = false;
             animator.SetTrigger("Jump");
+            animator.SetBool("Grounded", grounded);
         }
     }
 
