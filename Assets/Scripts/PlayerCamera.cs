@@ -90,7 +90,6 @@ public class PlayerCamera : MonoBehaviour
         Vector3 cameraOffset = new Vector3(offsetX, offsetY, playerZoom); 
         Vector3 targetPosition = player.position + player.TransformDirection(cameraOffset);
         transform.position = targetPosition;
-        transform.rotation = player.rotation;
         transform.LookAt(player.transform);
     }
 
@@ -203,7 +202,7 @@ public class PlayerCamera : MonoBehaviour
             scrollingHeight = false;
 
             // CAMERA ZOOM
-            if (mouseWheel != 0) {zoom -= mouseWheel * zoomSpeed;}
+            if (mouseWheel != 0 && !aiming) {zoom -= mouseWheel * zoomSpeed;}
         }
     }
 

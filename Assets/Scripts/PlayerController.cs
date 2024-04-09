@@ -150,50 +150,29 @@ public class PlayerController : NetworkBehaviour
             Vector3 horizontalMove;
             Vector3 verticalMove;
 
-            // INPUT
+            // TOWER VIEW INPUT
             if (towerView)
             {
-                /*if (climbingStairs)
-                {*/
                 Vector3 circleCenterToPlayer = transform.position - towerCenter;
                 Vector3 perpendicularToCircle = Vector3.Cross(circleCenterToPlayer, Vector3.up);
                 horizontalMove = horizontalInput * (Quaternion.AngleAxis(0, Vector3.up) * perpendicularToCircle.normalized);
                 verticalMove = -verticalInput * circleCenterToPlayer.normalized;
                 movement = horizontalMove + verticalMove;
-                //}
-
-                /*else 
-                {
-                    Vector3 right = transform.forward * verticalInput;
-                    Vector3 forward = transform.right * horizontalInput;
-                    movement = forward + right;
-                }*/
             }
 
+            // PLAYER VIEW INPUT
             else 
             {
-                /*if (climbingStairs)
-                {
-                    Vector3 circleCenterToPlayer = transform.position - towerCenter;
-                    Vector3 perpendicularToCircle = Vector3.Cross(circleCenterToPlayer, Vector3.up);
-                    horizontalMove = horizontalInput * circleCenterToPlayer.normalized;
-                    verticalMove = verticalInput * (Quaternion.AngleAxis(0, Vector3.up) * perpendicularToCircle.normalized);
-                    movement = horizontalMove + verticalMove;
-                }
-
-                else
-                {*/
                 Vector3 forward = transform.forward * verticalInput;
                 Vector3 right = transform.right * horizontalInput;
                 movement = forward + right;
-                //}
             }
 
             // MOVING
             if (movement.magnitude > 0)
             {
                 rb.MovePosition(rb.position + movement * speed * Time.deltaTime);
-                animator.SetBool("Moving",true);
+                if (grounded) {animator.SetBool("Moving",true);}
                 if (!aiming && towerView) {transform.rotation = Quaternion.LookRotation(movement.normalized);} // && climbingStairs
             }
 
