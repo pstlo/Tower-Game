@@ -1,3 +1,4 @@
+using System.Runtime.Serialization.Formatters;
 using TMPro;
 using Unity.Collections;
 using Unity.Netcode;
@@ -39,6 +40,8 @@ public class PlayerController : NetworkBehaviour
     private string playerName; 
     private float playerNameOffset = 1.5f;
 
+    private float playerViewMouseSensitivity = 10f;
+
     Vector3 towerCenter;
 
     private float speed;
@@ -53,7 +56,7 @@ public class PlayerController : NetworkBehaviour
     // private bool climbingStairs = true; // to do
     public NetworkVariable<bool> blocking = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
-    private float playerViewMouseSensitivity = 10f;
+
 
     void Start()
     {
@@ -87,6 +90,9 @@ public class PlayerController : NetworkBehaviour
             UpdateNameTextRpc(playerName);
 
             Respawn();
+
+            UIManager.Instance.ToggleTowerIndicatorMode(true);
+            UIManager.Instance.ToggleTowerIndicator(true);
         }
     }
 
@@ -109,6 +115,12 @@ public class PlayerController : NetworkBehaviour
             BlockHandler();
             JumpHandler();   
             PunchStartHandler();
+
+            if (!towerView) // MOUSE LOOK
+            {
+                float mouseX = Input.GetAxis("Mouse X") * playerViewMouseSensitivity; 
+                transform.Rotate(Vector3.up, mouseX);
+            }
         }
 
         // NAMETAG
@@ -276,10 +288,8 @@ public class PlayerController : NetworkBehaviour
 
         if (movement.magnitude > 0)
         {
-            movement = Quaternion.Euler(0f, playerCamera.GetPlayerViewRotationX(), 0f) * movement;
             rb.MovePosition(rb.position + movement * speed * Time.deltaTime);
             if (grounded) {animator.SetBool("Moving", true);}
-            // ROTATE???
         }
         
         else {animator.SetBool("Moving", false);}
@@ -433,7 +443,7 @@ public class PlayerController : NetworkBehaviour
         {
             towerView = !towerView;
             playerCamera.SetTowerView(towerView);
-            UIManager.Instance.ToggleTowerCameraIndicator(towerView);
+            UIManager.Instance.ToggleTowerIndicatorMode(towerView);
         }
     }
 

@@ -30,7 +30,7 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private float defaultPlayerZoom = -15;
     [SerializeField] private float minPlayerZoom = -40;
     [SerializeField] private float maxPlayerZoom = -1;
-    //private float playerViewMouseSensitivity = 10f;
+    
     private float playerCameraRotationX;
   
 
@@ -59,10 +59,10 @@ public class PlayerCamera : MonoBehaviour
         tiltAngle = defaultTiltAngle;
         zoom = defaultZoom;
         playerZoom = defaultPlayerZoom;
-        UIManager.Instance.ToggleTowerCameraIndicator(towerView);
+        UIManager.Instance.ToggleTowerIndicatorMode(towerView);
     }
     
-    void Update()
+    void LateUpdate()
     {
         if (player == null || tower == null) 
         {
@@ -89,18 +89,14 @@ public class PlayerCamera : MonoBehaviour
         float offsetX = 0f;
         float offsetY = 3f;
 
-        playerCameraRotationX += Input.GetAxis("Mouse X") * 10f; 
-
+        playerCameraRotationX = player.transform.rotation.y;
         Quaternion rotation = Quaternion.Euler(0f, playerCameraRotationX, 0f);
-
         Vector3 cameraOffset = new Vector3(offsetX, offsetY, playerZoom);
         cameraOffset = rotation * cameraOffset; 
 
         Vector3 targetPosition = player.position + player.TransformDirection(cameraOffset);
         transform.position = targetPosition;
         transform.LookAt(player.transform);
-
-        
     }
 
 

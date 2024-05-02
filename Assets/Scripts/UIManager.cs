@@ -65,7 +65,8 @@ public class UIManager : MonoBehaviour
         ToggleStartUI(false);
         ToggleCountdownTimer(false);
         TogglePauseUI(false);       
-        ToggleTowerCameraIndicator(false);
+        ToggleTowerIndicatorMode(false);
+        ToggleTowerIndicator(false);
     }
 
 
@@ -80,7 +81,14 @@ public class UIManager : MonoBehaviour
     public void ToggleNetworkUI(bool active) {networkUI.SetActive(active);}
     public void TogglePauseUI(bool active) {pauseMenuUI.SetActive(active);}
     public void ToggleGameOverUI(bool active) {gameOverUI.SetActive(active);}
-    public void ToggleTowerCameraIndicator(bool active) {towerCameraIndicator.gameObject.SetActive(active);}
+    public void ToggleTowerIndicator(bool active) {towerCameraIndicator.gameObject.SetActive(active);}
+
+    public void ToggleTowerIndicatorMode(bool active) 
+    {
+        if (active) {towerCameraIndicator.text = "[Tower View]";}
+        else {towerCameraIndicator.text = "[Player View]";}
+    }
+
     public void ToggleInGameUI(bool active) {inGameUI.SetActive(active);}
     public void ToggleCursor(bool active) 
     {
