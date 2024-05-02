@@ -109,12 +109,6 @@ public class PlayerController : NetworkBehaviour
             BlockHandler();
             JumpHandler();   
             PunchStartHandler();
-            
-            if (!towerView) 
-            {            
-                float mouseX = Input.GetAxis("Mouse X");
-                transform.Rotate(Vector3.up, mouseX * playerViewMouseSensitivity);
-            }
         }
 
         // NAMETAG
@@ -144,41 +138,7 @@ public class PlayerController : NetworkBehaviour
 
         if (!paused && GameManager.Instance.CanMove())
         {
-            float horizontalInput = Input.GetAxis("Horizontal");
-            float verticalInput = Input.GetAxis("Vertical");
-            Vector3 movement;
-            Vector3 horizontalMove;
-            Vector3 verticalMove;
-
-            // TOWER VIEW INPUT
-            if (towerView)
-            {
-                Vector3 circleCenterToPlayer = transform.position - towerCenter;
-                Vector3 perpendicularToCircle = Vector3.Cross(circleCenterToPlayer, Vector3.up);
-                horizontalMove = horizontalInput * (Quaternion.AngleAxis(0, Vector3.up) * perpendicularToCircle.normalized);
-                verticalMove = -verticalInput * circleCenterToPlayer.normalized;
-                movement = horizontalMove + verticalMove;
-            }
-
-            // PLAYER VIEW INPUT
-            else 
-            {
-                Vector3 forward = transform.forward * verticalInput;
-                Vector3 right = transform.right * horizontalInput;
-                movement = forward + right;
-            }
-
-            // MOVING
-            if (movement.magnitude > 0)
-            {
-                rb.MovePosition(rb.position + movement * speed * Time.deltaTime);
-                if (grounded) {animator.SetBool("Moving",true);}
-                if (!aiming && towerView) {transform.rotation = Quaternion.LookRotation(movement.normalized);} // && climbingStairs
-            }
-
-            // IDLE
-            else {animator.SetBool("Moving", false);} 
-
+            MovementHandler();
             if (rb.position.y < -5f) {Respawn();}
         }
     }
@@ -269,6 +229,63 @@ public class PlayerController : NetworkBehaviour
     }
 
 
+    private void MovementHandler()
+    {
+        if (towerView) {TowerViewMovement();}
+        else {PlayerViewMovement();}
+    }
+
+    private void TowerViewMovement()
+    {
+        float horizontalInput = Input.GetAxis("Horizontal");
+        float verticalInput = Input.GetAxis("Vertical");
+        Vector3 movement;
+        Vector3 horizontalMove;
+        Vector3 verticalMove;
+        Vector3 circleCenterToPlayer = transform.position - towerCenter;
+        Vector3 perpendicularToCircle = Vector3.Cross(circleCenterToPlayer, Vector3.up);
+        horizontalMove = horizontalInput * (Quaternion.AngleAxis(0, Vector3.up) * perpendicularToCircle.normalized);
+        verticalMove = -verticalInput * circleCenterToPlayer.normalized;
+        movement = horizontalMove + verticalMove;
+            
+        if (movement.magnitude > 0)
+        {
+            rb.MovePosition(rb.position + movement * speed * Time.deltaTime);
+            if (grounded) {animator.SetBool("Moving",true);}
+            if (!aiming) {transform.rotation = Quaternion.LookRotation(movement.normalized);} // && climbingStairs
+        }
+
+        else {animator.SetBool("Moving", false);} 
+    }
+
+    private void PlayerViewMovement()
+    {
+        float horizontalInput = Input.GetAxis("Horizontal");
+        float verticalInput = Input.GetAxis("Vertical");
+
+        Vector3 forward = transform.forward;
+        Vector3 right = transform.right;
+
+        forward.y = 0f;
+        right.y = 0f;
+
+        forward.Normalize();
+        right.Normalize();
+
+        Vector3 movement = (forward * verticalInput + right * horizontalInput).normalized;
+
+        if (movement.magnitude > 0)
+        {
+            movement = Quaternion.Euler(0f, playerCamera.GetPlayerViewRotationX(), 0f) * movement;
+            rb.MovePosition(rb.position + movement * speed * Time.deltaTime);
+            if (grounded) {animator.SetBool("Moving", true);}
+            // ROTATE???
+        }
+        
+        else {animator.SetBool("Moving", false);}
+    }
+
+
     public void SetSpawn(Vector3 pos, Quaternion rot)
     {
         spawnPoint.position = pos;
@@ -314,6 +331,7 @@ public class PlayerController : NetworkBehaviour
             }
         }
     }
+
 
 
     private void AimHandler()

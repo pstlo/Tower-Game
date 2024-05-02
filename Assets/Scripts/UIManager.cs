@@ -82,5 +82,10 @@ public class UIManager : MonoBehaviour
     public void ToggleGameOverUI(bool active) {gameOverUI.SetActive(active);}
     public void ToggleTowerCameraIndicator(bool active) {towerCameraIndicator.gameObject.SetActive(active);}
     public void ToggleInGameUI(bool active) {inGameUI.SetActive(active);}
-    public void ToggleCursor(bool active) {Cursor.visible = active;}
+    public void ToggleCursor(bool active) 
+    {
+        Cursor.visible = active;
+        if (!active) {Cursor.lockState = CursorLockMode.Locked;}
+        else {Cursor.lockState = CursorLockMode.None;}
+    }
 }
