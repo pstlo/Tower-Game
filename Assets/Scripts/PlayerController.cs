@@ -291,10 +291,33 @@ public class PlayerController : NetworkBehaviour
         if (movement.magnitude > 0)
         {
             rb.MovePosition(rb.position + movement * speed * Time.deltaTime);
-            if (grounded) {animator.SetBool("Moving", true);}
+
+            // ANIMATION
+            if (grounded) 
+            {
+                if (verticalInput == 0) 
+                {
+                    animator.SetBool("Strafing", true);
+                    animator.SetFloat("Strafe", horizontalInput);
+                    animator.SetBool("Moving", false);
+                }
+
+                else 
+                {
+                    animator.SetBool("Strafing",false);
+                    animator.SetFloat("Strafe", 0);
+                    animator.SetBool("Moving", true);
+                }
+            }
         }
         
-        else {animator.SetBool("Moving", false);}
+        else 
+        {
+            animator.SetBool("Moving", false);
+            animator.SetFloat("Strafe", 0);
+            animator.SetBool("Strafing",false);
+            
+        }
     }
 
 
