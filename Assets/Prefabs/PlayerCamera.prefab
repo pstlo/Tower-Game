@@ -122,3 +122,8 @@ MonoBehaviour:
   scrollingHeightSpeed: 3
   defaultHeight: 3
   zoomSmoothTime: 0.1
+  defaultPlayerZoom: -15
+  minPlayerZoom: -25
+  maxPlayerZoom: -5
+  minPlayerTilt: 40
+  maxPlayerTilt: -40

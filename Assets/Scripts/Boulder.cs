@@ -13,31 +13,39 @@ public class Boulder : NetworkBehaviour
     private Rigidbody rb;
     private Vector3 towerCenter;
 
+    private bool grounded;
+
 
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.isKinematic = false;
         towerCenter = tower.position;
+        grounded = false;
     }
 
     private void Update()
     {
         // BOULDER MOVEMENT
-        towerCenter.y = transform.position.y;
-        Vector3 directionToTower = towerCenter - transform.position;
-        float radius = directionToTower.magnitude;
-        float y = transform.position.y;
-        float angle = direction * Time.time * speed; 
-        float x = towerCenter.x + radius * Mathf.Cos(angle);
-        float z = towerCenter.z + radius * Mathf.Sin(angle);
-        transform.position = new Vector3(x, y, z);
+        if (grounded)
+        {
+            towerCenter.y = transform.position.y;
+            Vector3 directionToTower = towerCenter - transform.position;
+            float radius = directionToTower.magnitude;
+            float y = transform.position.y;
+            float angle = direction * Time.time * speed; 
+            float x = towerCenter.x + radius * Mathf.Cos(angle);
+            float z = towerCenter.z + radius * Mathf.Sin(angle);
+            transform.position = new Vector3(x, y, z);
+        }
 
         if (IsOwner && transform.position.y < despawnHeight) {Destroy(gameObject);}
     }
 
     private void OnCollisionEnter(Collision collision)
     {
+        if (collision.gameObject.CompareTag("Ground")) {grounded = true;}
+
         if (collision.gameObject.CompareTag("Player"))
         {
             Vector3 knockbackDirection = collision.transform.position - transform.position;
@@ -45,6 +53,7 @@ public class Boulder : NetworkBehaviour
 
             Rigidbody playerRb = collision.gameObject.GetComponent<Rigidbody>();
             if (playerRb != null) {playerRb.AddForce(knockbackDirection.normalized * knockbackForce, ForceMode.Impulse);}
-        }
+        }    
     }
+
 }

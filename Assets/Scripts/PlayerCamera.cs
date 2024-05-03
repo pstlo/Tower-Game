@@ -29,9 +29,11 @@ public class PlayerCamera : MonoBehaviour
     // PLAYER VIEW
     [SerializeField] private float defaultPlayerZoom = -15;
     [SerializeField] private float minPlayerZoom = -40;
-    [SerializeField] private float maxPlayerZoom = -1;
+    [SerializeField] private float maxPlayerZoom = -5;
+    [SerializeField] private float minPlayerTilt = 40f;
+    [SerializeField] private float maxPlayerTilt = -40f;
     
-    private float playerCameraRotationX;
+    private float tilt;
   
 
     private float tiltAngle;
@@ -83,22 +85,24 @@ public class PlayerCamera : MonoBehaviour
     private void PlayerView()
     {
         float mouseWheel = Input.GetAxis("Mouse ScrollWheel");
-        if (mouseWheel != 0) {playerZoom += mouseWheel * zoomSpeed;}
-        playerZoom = Mathf.Clamp(playerZoom,minPlayerZoom,maxPlayerZoom);
+        if (mouseWheel != 0) { playerZoom += mouseWheel * zoomSpeed; }
+        playerZoom = Mathf.Clamp(playerZoom, minPlayerZoom, maxPlayerZoom);
 
         float offsetX = 0f;
         float offsetY = 3f;
+        
+        tilt += Input.GetAxis("Mouse Y") * -tiltSpeed;
+        tilt = Mathf.Clamp(tilt, maxPlayerTilt, minPlayerTilt);
 
-        playerCameraRotationX = player.transform.rotation.y;
-        Quaternion rotation = Quaternion.Euler(0f, playerCameraRotationX, 0f);
-        Vector3 cameraOffset = new Vector3(offsetX, offsetY, playerZoom);
-        cameraOffset = rotation * cameraOffset; 
+        float playerCameraRotationY = player.transform.rotation.y;
+        Quaternion rotation = Quaternion.Euler(tilt, playerCameraRotationY, 0f);
+        Vector3 cameraOffset = new Vector3(offsetX, -playerZoom / offsetY, playerZoom);
+        cameraOffset = rotation * cameraOffset;
 
         Vector3 targetPosition = player.position + player.TransformDirection(cameraOffset);
         transform.position = targetPosition;
         transform.LookAt(player.transform);
     }
-
 
 
 
@@ -218,5 +222,5 @@ public class PlayerCamera : MonoBehaviour
         UIManager.Instance.ToggleCursor(active);
     }
 
-    public float GetPlayerViewRotationX() {return playerCameraRotationX;}
+    public float GetPlayerViewRotationX() {return tilt;}
 }

@@ -42,7 +42,7 @@ public class GameManager : NetworkBehaviour
         cylinderCenter.y = 0;
         boulderSpawnHeight = tower.transform.localScale.y;
         boulderSpawnRadius = tower.transform.localScale.x;
-        outerBoulderSpawnRadius = boulderSpawnRadius + stepPrefab.transform.localScale.x * 0.8f;
+        outerBoulderSpawnRadius = boulderSpawnRadius; //+ (stepPrefab.transform.localScale.x * 0.25f);
     }
 
     void Update()
@@ -123,7 +123,7 @@ public class GameManager : NetworkBehaviour
         {
             GameObject boulder = Instantiate(boulderPrefab, position, Quaternion.identity);
             NetworkObject networkObject = boulder.GetComponent<NetworkObject>();
-            if (networkObject != null) {networkObject.Spawn();}
+            networkObject.Spawn();
         }
     }
 

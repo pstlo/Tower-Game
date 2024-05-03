@@ -123,6 +123,8 @@ public class PlayerController : NetworkBehaviour
             }
         }
 
+        if (paused) {animator.SetBool("Moving",false);}
+
         // NAMETAG
         playerNameText.transform.LookAt(playerCamera.transform);
         playerNameText.rectTransform.Rotate(0, 180, 0);
