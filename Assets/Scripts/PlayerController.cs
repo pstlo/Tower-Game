@@ -51,6 +51,7 @@ public class PlayerController : NetworkBehaviour
     private bool punching = false;
     private bool punchHitboxStarted = false;
     private float lastPunchTime; 
+    private float combatMoveDirection;
     
     private bool towerView = true;
     // private bool climbingStairs = true; // to do
@@ -123,7 +124,11 @@ public class PlayerController : NetworkBehaviour
             }
         }
 
-        if (paused) {animator.SetBool("Moving",false);}
+        if (paused) 
+        {
+            animator.SetBool("Moving",false);
+            animator.SetBool("Strafing",false);
+        }
 
         // NAMETAG
         playerNameText.transform.LookAt(playerCamera.transform);
@@ -245,12 +250,17 @@ public class PlayerController : NetworkBehaviour
 
     private void MovementHandler()
     {
+        combatMoveDirection = 1;
+
         if (towerView) {TowerViewMovement();}
         else {PlayerViewMovement();}
     }
 
     private void TowerViewMovement()
     {
+        combatMoveDirection = 1;
+        animator.SetBool("Strafing",false);
+
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
         Vector3 movement;
@@ -267,6 +277,8 @@ public class PlayerController : NetworkBehaviour
             rb.MovePosition(rb.position + movement * speed * Time.deltaTime);
             if (grounded) {animator.SetBool("Moving",true);}
             if (!aiming) {transform.rotation = Quaternion.LookRotation(movement.normalized);} // && climbingStairs
+
+            if (horizontalInput < 0) {combatMoveDirection = -1;}
         }
 
         else {animator.SetBool("Moving", false);} 
@@ -295,6 +307,7 @@ public class PlayerController : NetworkBehaviour
             // ANIMATION
             if (grounded) 
             {
+                // STRAFING
                 if (verticalInput == 0) 
                 {
                     animator.SetBool("Strafing", true);
@@ -302,12 +315,19 @@ public class PlayerController : NetworkBehaviour
                     animator.SetBool("Moving", false);
                 }
 
+                // MOVING FORWARD (ISH)
                 else 
                 {
                     animator.SetBool("Strafing",false);
                     animator.SetFloat("Strafe", 0);
                     animator.SetBool("Moving", true);
+                    
+                    if (horizontalInput < 0) {combatMoveDirection = -1;}
                 }
+
+               
+                
+
             }
         }
         
@@ -443,21 +463,46 @@ public class PlayerController : NetworkBehaviour
 
     private void MoveSpeedHandler()
     {
+        // Guarding
         if (blocking.Value)
         {
             speed = moveSpeed * blockMovementSpeedMultiplier;
+            animator.SetFloat("MoveSpeed",combatMoveDirection * blockMovementSpeedMultiplier);
         }
 
+        
         else if (aiming) 
         {
-            if (punching) {speed = moveSpeed * aimMovementSpeedMultiplier * punchMoveSpeedModifier;}
-            else {speed = moveSpeed * aimMovementSpeedMultiplier;}
+            // Aiming and punching
+            if (punching) 
+            {
+                speed = moveSpeed * aimMovementSpeedMultiplier;
+                animator.SetFloat("MoveSpeed",combatMoveDirection * punchMoveSpeedModifier);
+            }
+            
+            // Aiming
+            else 
+            {
+                speed = moveSpeed * aimMovementSpeedMultiplier;
+                animator.SetFloat("MoveSpeed",combatMoveDirection * aimMovementSpeedMultiplier);
+            }
         }
 
         else
         {
-            if (punching) {speed = moveSpeed * punchMoveSpeedModifier;}
-            else {speed = moveSpeed;}
+            // Punching
+            if (punching) 
+            {
+                speed = moveSpeed * punchMoveSpeedModifier;
+                animator.SetFloat("MoveSpeed",combatMoveDirection * punchMoveSpeedModifier);
+            }
+
+            // Regular movement
+            else 
+            {
+                speed = moveSpeed;
+                animator.SetFloat("MoveSpeed",1f);
+            }
         }
     }
 
