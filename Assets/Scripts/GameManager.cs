@@ -40,9 +40,9 @@ public class GameManager : NetworkBehaviour
         // Boulder spawn area
         cylinderCenter = tower.transform.position;
         cylinderCenter.y = 0;
-        boulderSpawnHeight = tower.transform.localScale.y;
-        boulderSpawnRadius = tower.transform.localScale.x;
-        outerBoulderSpawnRadius = boulderSpawnRadius; //+ (stepPrefab.transform.localScale.x * 0.25f);
+        boulderSpawnHeight = tower.transform.localScale.y * 2;
+        boulderSpawnRadius = tower.transform.localScale.x / 3;
+        outerBoulderSpawnRadius = boulderSpawnRadius+ (stepPrefab.transform.localScale.x * 0.25f);
     }
 
     void Update()
