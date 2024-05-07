@@ -1,6 +1,4 @@
-using System.Runtime.Serialization.Formatters;
 using TMPro;
-using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -16,15 +14,34 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private float moveSpeed = 10f; 
     [SerializeField] private float jumpForce = 5f; 
 
-
     // COMBAT
     [SerializeField] private float punchForce = 6f; 
+    [SerializeField] private float kickForce = 8f;
+    [SerializeField] private float headbuttForce = 5f;  
+
     [SerializeField] private float punchMoveSpeedModifier = 0.4f; 
+    [SerializeField] private float kickMoveSpeedModifier = 0f;
+    [SerializeField] private float headbuttMoveSpeedModifier = 0.75f;  
+    
+
+    // THERES GOTTA BE A BETTER WAY TO DO THIS LOL 
+
+    // PUNCH ANIMATION
     [SerializeField] private float punchHitboxStart = 0.3f; 
     [SerializeField] private float punchHitboxEnd = 0.75f; 
     [SerializeField] private float punchAnimationDuration = 0.76f;
-    [SerializeField] private float blockMovementSpeedMultiplier = 0.25f;
 
+    // KICK ANIMATION
+    [SerializeField] private float kickAnimationDuration = 1.7f; 
+    [SerializeField] private float kickHitboxStart = 0.4f; 
+    [SerializeField] private float kickHitboxEnd = 0.8f; 
+
+    // HEADBUTT ANIMATION
+    [SerializeField] private float headbuttAnimationDuration = 1.7f; 
+    [SerializeField] private float headbuttHitboxStart = 0.8f; 
+    [SerializeField] private float headbuttHitboxEnd = 1f; 
+
+    [SerializeField] private float blockMovementSpeedMultiplier = 0.25f;
 
     // AIMING
     [SerializeField] private float aimSensitivity = 3000f;
@@ -48,9 +65,20 @@ public class PlayerController : NetworkBehaviour
     private bool paused = false;
     private bool aiming;
     private bool grounded = true;
+
+
+    private bool attacking = false;
+    private bool attackStarted = false;
+
+    private float lastAttack;
+    private float attackDuration;
+    private float attackHitboxStart;
+    private float attackHitboxEnd;
+
     private bool punching = false;
-    private bool punchHitboxStarted = false;
-    private float lastPunchTime; 
+    private bool headbutting = false;
+    private bool kicking = false;
+
     private float combatMoveDirection;
     
     private bool towerView = true;
@@ -112,10 +140,10 @@ public class PlayerController : NetworkBehaviour
         // MOVES
         if (!paused && GameManager.Instance.CanMove()) 
         {
-            AimHandler();
-            BlockHandler();
+
             JumpHandler();   
-            PunchStartHandler();
+            CombatHandler();
+
 
             if (!towerView) // MOUSE LOOK
             {
@@ -152,7 +180,7 @@ public class PlayerController : NetworkBehaviour
             return;
         }
 
-        PunchHandler();
+        AttackHandler();
         MoveSpeedHandler();
 
         if (!paused && GameManager.Instance.CanMove())
@@ -189,32 +217,49 @@ public class PlayerController : NetworkBehaviour
             animator.SetBool("Grounded", grounded);
         } 
 
-        // PUNCHING
-        if (punching && punchHitboxStarted && collision.gameObject.CompareTag("Player"))
+        // ATTACKING
+        if (attacking && attackStarted && collision.gameObject.CompareTag("Player"))
         {
             PlayerController controller = collision.gameObject.GetComponent<PlayerController>();
+
+            Debug.Log("Collidee: " + collision.gameObject.name + "Collider: " + collision.collider.name); // DEBUG
+
             if (controller != null && controller.gameObject != gameObject)
             {
                 if (controller.blocking.Value)
                 {
                     if (!(collision.collider == controller.playerCollider.rightFist ||
                         collision.collider == controller.playerCollider.leftFist ||
-                        collision.collider == controller.playerCollider.rightArm||
-                        collision.collider == controller.playerCollider.leftArm)) {controller.PunchedRpc(transform.position);}
+                        collision.collider == controller.playerCollider.rightArm ||
+                        collision.collider == controller.playerCollider.leftArm)) {AttackForceHandler(controller);}
                 }
-                else {controller.PunchedRpc(transform.position);}
+                else {AttackForceHandler(controller);}
             }
         }
     }
 
+    void AttackForceHandler(PlayerController other)
+    {
+        float force = 0f;
+        if (punching) {force = punchForce;}
+        else if (kicking) {force = kickForce;}
+        else if (headbutting) {force = headbuttForce;}
+        
+        other.AttackedRpc(transform.position,force);
+    }
+
+    void CombatHandler()
+    {
+        AimHandler();
+        BlockHandler();
+        AttackInputHandler();
+    }
 
 
     [Rpc(SendTo.Everyone)]
-    private void UpdateNameTextRpc(string name) {playerNameText.text = name; }
-
+    private void UpdateNameTextRpc(string name) {playerNameText.text = name;}
 
     public string GetName() {return playerName;}
-
 
     private void SetName(string name) {playerName = name;}
 
@@ -229,18 +274,17 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-
     private void SetPauseMenuActive(bool active) 
     {
         UIManager.Instance.TogglePauseUI(active);
         UIManager.Instance.ToggleCursor(active);
     }
 
-
     public void Leave()
     {
         if (IsLocalPlayer)
         {
+            UIManager.Instance.ToggleCursor(true);
             GameLobby.Instance.LeaveLobby();
             Destroy(playerCamera);
             Destroy(gameObject);
@@ -251,7 +295,6 @@ public class PlayerController : NetworkBehaviour
     private void MovementHandler()
     {
         combatMoveDirection = 1;
-
         if (towerView) {TowerViewMovement();}
         else {PlayerViewMovement();}
     }
@@ -324,10 +367,6 @@ public class PlayerController : NetworkBehaviour
                     
                     if (horizontalInput < 0) {combatMoveDirection = -1;}
                 }
-
-               
-                
-
             }
         }
         
@@ -336,10 +375,8 @@ public class PlayerController : NetworkBehaviour
             animator.SetBool("Moving", false);
             animator.SetFloat("Strafe", 0);
             animator.SetBool("Strafing",false);
-            
         }
     }
-
 
     public void SetSpawn(Vector3 pos, Quaternion rot)
     {
@@ -348,45 +385,38 @@ public class PlayerController : NetworkBehaviour
     }
 
 
-    public void Punched(Vector3 puncher)
+    public void Attacked(Vector3 attacker, float force)
     {
         if (!IsLocalPlayer) {return;}
         Rigidbody rb = GetComponent<Rigidbody>();
-        Vector3 direction = (transform.position - puncher).normalized;
-        rb.AddForce(direction * punchForce, ForceMode.Impulse);
+        Vector3 direction = (transform.position - attacker).normalized;
+        rb.AddForce(direction * force, ForceMode.Impulse);
     }
 
 
     [Rpc(SendTo.Everyone)]
-    private void PunchedRpc(Vector3 puncher) {Punched(puncher);}
+    private void AttackedRpc(Vector3 attacker, float force) {Attacked(attacker,force);}
 
 
     private void BlockHandler()
     {
-        if (!punching)
+        if (!attacking)
         {
             if (Input.GetMouseButtonDown(2)) 
             {
-                playerCollider.rightFist.enabled = true;
-                playerCollider.leftFist.enabled = true;
-                playerCollider.rightArm.enabled = true;
-                playerCollider.leftArm.enabled = true;
+                playerCollider.ToggleBlockColliders(true);
                 blocking.Value = true;
                 animator.SetBool("Blocking",true);
             }
 
             if (Input.GetMouseButtonUp(2)) 
             {
-                playerCollider.rightFist.enabled = false;
-                playerCollider.leftFist.enabled = false;
-                playerCollider.rightArm.enabled = false;
-                playerCollider.leftArm.enabled = false;
+                playerCollider.ToggleBlockColliders(false);
                 blocking.Value = false;
                 animator.SetBool("Blocking",false);
             }
         }
     }
-
 
 
     private void AimHandler()
@@ -415,7 +445,7 @@ public class PlayerController : NetworkBehaviour
 
     private void JumpHandler()
     {
-        if (grounded && !punching && Input.GetKeyDown(KeyCode.Space)) 
+        if (grounded && !attacking && Input.GetKeyDown(KeyCode.Space)) 
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             grounded = false;
@@ -425,39 +455,105 @@ public class PlayerController : NetworkBehaviour
     }
 
 
-    private void PunchStartHandler()
+    private void AttackInputHandler()
     {
-        if (Input.GetMouseButtonDown(0) && !Input.GetKey(KeyCode.C))
+        if (attacking && Time.time - lastAttack >= attackDuration) {attacking = false;} // END OF ATTACK
+
+        bool canAttack = !attacking && grounded && Time.time - lastAttack >= attackDuration;
+
+        if (!Input.GetKeyDown(KeyCode.C))
         {
-            // START PUNCH
-            if (grounded && Time.time - lastPunchTime >= punchAnimationDuration)
+            // PUNCH
+            if (canAttack && Input.GetMouseButtonDown(0)) 
             {
-                lastPunchTime = Time.time;
                 punching = true;
+                canAttack = false;
+                lastAttack = Time.time;
+                attacking = true;
+
+                attackDuration = punchAnimationDuration; 
+                attackHitboxStart = punchHitboxStart;
+                attackHitboxEnd = punchHitboxEnd;
+
                 animator.SetTrigger("Punch"); 
+            }   
+
+            // KICK
+            if (canAttack && Input.GetKeyDown(KeyCode.F)) 
+            {
+                kicking = true;
+                canAttack = false;
+                lastAttack = Time.time;
+                attacking = true;
+
+                attackDuration = kickAnimationDuration; 
+                attackHitboxStart = kickHitboxStart;
+                attackHitboxEnd = kickHitboxEnd;
+
+                animator.SetTrigger("Kick");
+                animator.SetLayerWeight(2,0f);
+            }
+
+            // HEADBUTT
+            if (canAttack && Input.GetKeyDown(KeyCode.Q)) 
+            {
+                headbutting = true;
+                canAttack = false;
+                lastAttack = Time.time;
+                attacking = true;
+
+                attackDuration = headbuttAnimationDuration; 
+                attackHitboxStart = headbuttHitboxStart;
+                attackHitboxEnd = headbuttHitboxEnd;
+
+                animator.SetTrigger("Headbutt");
             }
         }
+        
     }
 
-
-    private void PunchHandler()
+    private void AttackHandler()
     {
-        // START PUNCH HITBOX
-        if (punching && !punchHitboxStarted && Time.time - lastPunchTime >= punchHitboxStart)
+        float time = Time.time;
+        // START ATTACK HITBOX
+        if (attacking && !attackStarted && time - lastAttack >= attackHitboxStart)
         {
-            punchHitboxStarted = true;
-            playerCollider.rightFist.enabled = true;
+            attackStarted = true;
+            if (punching) {playerCollider.TogglePunchColliders(true);}
+            if (kicking) {playerCollider.ToggleKickColliders(true);}
+            if (headbutting) {playerCollider.ToggleHeadbuttColliders(true);}
         }
 
-        // END PUNCH HITBOX
-        if (punching && punchHitboxStarted && Time.time - lastPunchTime >= punchHitboxEnd)
+        // END ATTACK HITBOX
+        if (attacking && attackStarted && time - lastAttack >= attackHitboxEnd)
         {
-            punchHitboxStarted = false;
-            playerCollider.rightFist.enabled = false;
+            attackStarted = false;
+            
+            if (punching) 
+            {
+                playerCollider.TogglePunchColliders(false);
+                punching = false;
+            }
+
+            if (kicking) 
+            {
+                playerCollider.ToggleKickColliders(false);
+                kicking = false;
+                
+            }
+
+            if (headbutting) 
+            {
+                playerCollider.ToggleHeadbuttColliders(false);
+                headbutting = false;
+            }
         }
 
-        // END PUNCH
-        if (punching && Time.time - lastPunchTime >= punchAnimationDuration) {punching = false;}
+        // END ATTACK
+        if (attacking && time - lastAttack >= attackDuration) {attacking = false;}
+
+        if (!attacking) {animator.SetLayerWeight(2,1f);}
+
     }
 
 
@@ -470,25 +566,7 @@ public class PlayerController : NetworkBehaviour
             animator.SetFloat("MoveSpeed",combatMoveDirection * blockMovementSpeedMultiplier);
         }
 
-        
-        else if (aiming) 
-        {
-            // Aiming and punching
-            if (punching) 
-            {
-                speed = moveSpeed * aimMovementSpeedMultiplier;
-                animator.SetFloat("MoveSpeed",combatMoveDirection * punchMoveSpeedModifier);
-            }
-            
-            // Aiming
-            else 
-            {
-                speed = moveSpeed * aimMovementSpeedMultiplier;
-                animator.SetFloat("MoveSpeed",combatMoveDirection * aimMovementSpeedMultiplier);
-            }
-        }
-
-        else
+        else if (attacking)
         {
             // Punching
             if (punching) 
@@ -497,13 +575,31 @@ public class PlayerController : NetworkBehaviour
                 animator.SetFloat("MoveSpeed",combatMoveDirection * punchMoveSpeedModifier);
             }
 
-            // Regular movement
-            else 
+            // Kicking
+            else if (kicking) {speed = moveSpeed * kickMoveSpeedModifier;}
+
+            // Headbutting
+            else if (headbutting) 
             {
-                speed = moveSpeed;
-                animator.SetFloat("MoveSpeed",1f);
+                speed = moveSpeed * headbuttMoveSpeedModifier;
+                animator.SetFloat("MoveSpeed",combatMoveDirection * headbuttMoveSpeedModifier);
             }
         }
+        
+        // Aiming
+        else if (aiming) 
+        {
+            speed = moveSpeed * aimMovementSpeedMultiplier;
+            animator.SetFloat("MoveSpeed",combatMoveDirection * aimMovementSpeedMultiplier);
+        }
+            
+        // Regular movement
+        else 
+        {
+            speed = moveSpeed;
+            animator.SetFloat("MoveSpeed",1f);
+        }
+        
     }
 
     private void ViewHandler()
