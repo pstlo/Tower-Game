@@ -6,7 +6,7 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private Transform tower;
     
     // TOWER VIEW
-    [SerializeField] private float maxZoom = 20f;
+    [SerializeField] private float maxZoom = 30f;
     [SerializeField] private float minZoom = 100f;
     [SerializeField] private float zoomSpeed = 5f;
     [SerializeField] private float defaultZoom = 25f;
@@ -110,6 +110,8 @@ public class PlayerCamera : MonoBehaviour
     private void TowerView()
     {
         towerPosition.y = player.position.y;
+        float playerDistance = Vector3.Distance(towerPosition, player.position);
+
         if (!scrollingHeight) {cameraHeight = towerPosition.y + defaultHeight;}
 
         if (!aimZoomSet && aiming)
@@ -129,13 +131,12 @@ public class PlayerCamera : MonoBehaviour
         if (!aiming && aimZoomSet)
         {
             zoom = Mathf.SmoothDamp(zoom, preAimZoom, ref currentZoomVelocity, zoomSmoothTime);
-            if (Mathf.Abs(preAimZoom-zoom) <= 1)
-            {
-                aimZoomSet = false;
-            }
+            if (Mathf.Abs(preAimZoom-zoom) <= 1) {aimZoomSet = false;}
         }
 
-        zoom = Mathf.Clamp(zoom, maxZoom, minZoom);
+        zoom = Mathf.Clamp(zoom, Mathf.Min(maxZoom, playerDistance + 5), minZoom);
+
+        // Debug.Log("Zoom: " + zoom + ", Dist: " + playerDistance); // ZOOM DEBUG
 
 
         if (!orbiting)

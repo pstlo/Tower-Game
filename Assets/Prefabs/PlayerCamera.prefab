@@ -107,7 +107,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 5166308513625419020, guid: 5d34fc417d1d83444bdd1b0e47cad7f9, type: 3}
   tower: {fileID: 6495674483639905249, guid: 0f830ede18fec69459fd12699630ac27, type: 3}
-  maxZoom: 20
+  maxZoom: 30
   minZoom: 100
   zoomSpeed: 5
   defaultZoom: 25

@@ -55,6 +55,7 @@ public class PlayerController : NetworkBehaviour
     public PlayerCollider playerCollider;
     
     private string playerName; 
+    
     private float playerNameOffset = 1.5f;
 
     private float playerViewMouseSensitivity = 10f;
@@ -143,6 +144,7 @@ public class PlayerController : NetworkBehaviour
 
             JumpHandler();   
             CombatHandler();
+            
 
 
             if (!towerView) // MOUSE LOOK
@@ -180,7 +182,7 @@ public class PlayerController : NetworkBehaviour
             return;
         }
 
-        AttackHandler();
+        
         MoveSpeedHandler();
 
         if (!paused && GameManager.Instance.CanMove())
@@ -222,7 +224,7 @@ public class PlayerController : NetworkBehaviour
         {
             PlayerController controller = collision.gameObject.GetComponent<PlayerController>();
 
-            Debug.Log("Collidee: " + collision.gameObject.name + "Collider: " + collision.collider.name); // DEBUG
+            Debug.Log(GetName() + " attacks " + controller.GetName() + "..."); // COMBAT DEBUG
 
             if (controller != null && controller.gameObject != gameObject)
             {
@@ -231,7 +233,13 @@ public class PlayerController : NetworkBehaviour
                     if (!(collision.collider == controller.playerCollider.rightFist ||
                         collision.collider == controller.playerCollider.leftFist ||
                         collision.collider == controller.playerCollider.rightArm ||
-                        collision.collider == controller.playerCollider.leftArm)) {AttackForceHandler(controller);}
+                        collision.collider == controller.playerCollider.leftArm)) 
+                    {
+                        AttackForceHandler(controller);
+                        Debug.Log("It lands!"); // COMBAT DEBUG
+                    }
+                    
+                    else {Debug.Log("But its blocked!");} // COMBAT DEBUG
                 }
                 else {AttackForceHandler(controller);}
             }
@@ -253,6 +261,7 @@ public class PlayerController : NetworkBehaviour
         AimHandler();
         BlockHandler();
         AttackInputHandler();
+        AttackHandler();
     }
 
 
@@ -260,6 +269,7 @@ public class PlayerController : NetworkBehaviour
     private void UpdateNameTextRpc(string name) {playerNameText.text = name;}
 
     public string GetName() {return playerName;}
+    
 
     private void SetName(string name) {playerName = name;}
 
@@ -476,6 +486,8 @@ public class PlayerController : NetworkBehaviour
                 attackHitboxEnd = punchHitboxEnd;
 
                 animator.SetTrigger("Punch"); 
+
+                Debug.Log("Started punch"); // COMBAT DEBUG
             }   
 
             // KICK
@@ -492,6 +504,8 @@ public class PlayerController : NetworkBehaviour
 
                 animator.SetTrigger("Kick");
                 animator.SetLayerWeight(2,0f);
+
+                Debug.Log("Started kick"); // COMBAT DEBUG
             }
 
             // HEADBUTT
@@ -507,17 +521,20 @@ public class PlayerController : NetworkBehaviour
                 attackHitboxEnd = headbuttHitboxEnd;
 
                 animator.SetTrigger("Headbutt");
+
+                Debug.Log("Started headbutt"); // COMBAT DEBUG
             }
         }
         
     }
 
-    private void AttackHandler()
+    private void AttackHandler() // THIS IS BROKEN  !!!!!!!!!!!!!
     {
         float time = Time.time;
         // START ATTACK HITBOX
         if (attacking && !attackStarted && time - lastAttack >= attackHitboxStart)
         {
+            Debug.Log("Hitbox started"); // COMBAT DEBUG
             attackStarted = true;
             if (punching) {playerCollider.TogglePunchColliders(true);}
             if (kicking) {playerCollider.ToggleKickColliders(true);}
@@ -525,7 +542,7 @@ public class PlayerController : NetworkBehaviour
         }
 
         // END ATTACK HITBOX
-        if (attacking && attackStarted && time - lastAttack >= attackHitboxEnd)
+        if (attackStarted && time - lastAttack >= attackHitboxEnd)
         {
             attackStarted = false;
             
@@ -547,10 +564,16 @@ public class PlayerController : NetworkBehaviour
                 playerCollider.ToggleHeadbuttColliders(false);
                 headbutting = false;
             }
+
+            Debug.Log("Hitbox ended"); // COMBAT DEBUG
         }
 
         // END ATTACK
-        if (attacking && time - lastAttack >= attackDuration) {attacking = false;}
+        if (attacking && time - lastAttack >= attackDuration) 
+        {
+            attacking = false;
+            Debug.Log("Attack ended"); // COMBAT DEBUG
+        }
 
         if (!attacking) {animator.SetLayerWeight(2,1f);}
 
