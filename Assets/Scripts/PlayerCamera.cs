@@ -52,6 +52,7 @@ public class PlayerCamera : MonoBehaviour
     private bool aiming = false;
     private bool aimZoomSet = false;
     private bool towerView = true;
+    private bool paused = false;
 
     private Vector3 towerPosition;
 
@@ -85,13 +86,13 @@ public class PlayerCamera : MonoBehaviour
     private void PlayerView()
     {
         float mouseWheel = Input.GetAxis("Mouse ScrollWheel");
-        if (mouseWheel != 0) { playerZoom += mouseWheel * zoomSpeed; }
+        if (!paused && mouseWheel != 0) { playerZoom += mouseWheel * zoomSpeed; }
         playerZoom = Mathf.Clamp(playerZoom, minPlayerZoom, maxPlayerZoom);
 
         float offsetX = 0f;
         float offsetY = 3f;
         
-        tilt += Input.GetAxis("Mouse Y") * -tiltSpeed;
+        if (!paused) {tilt += Input.GetAxis("Mouse Y") * -tiltSpeed;}
         tilt = Mathf.Clamp(tilt, maxPlayerTilt, minPlayerTilt);
 
         float playerCameraRotationY = player.transform.rotation.y;
@@ -224,4 +225,6 @@ public class PlayerCamera : MonoBehaviour
     }
 
     public float GetPlayerViewRotationX() {return tilt;}
+
+    public void TogglePause(bool active) {paused = active;}
 }

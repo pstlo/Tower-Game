@@ -70,6 +70,7 @@ public class PlayerController : NetworkBehaviour
 
     private bool attacking = false;
     private bool attackStarted = false;
+    private bool startHitbox = false;
 
     private float lastAttack;
     private float attackDuration;
@@ -80,7 +81,11 @@ public class PlayerController : NetworkBehaviour
     private bool headbutting = false;
     private bool kicking = false;
 
-    private float combatMoveDirection;
+
+    // ORIENTATION
+    private float facing; // -1 or 1
+    private bool movingForward;
+    private bool facingForward;
     
     private bool towerView = true;
     // private bool climbingStairs = true; // to do
@@ -136,6 +141,7 @@ public class PlayerController : NetworkBehaviour
         {
             paused = !paused;
             SetPauseMenuActive(paused);
+            playerCamera.TogglePause(paused);
         }
 
         // MOVES
@@ -304,18 +310,26 @@ public class PlayerController : NetworkBehaviour
 
     private void MovementHandler()
     {
-        combatMoveDirection = 1;
         if (towerView) {TowerViewMovement();}
         else {PlayerViewMovement();}
     }
 
     private void TowerViewMovement()
     {
-        combatMoveDirection = 1;
         animator.SetBool("Strafing",false);
 
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
+
+        // ORIENTATION (RELATIVE TO CAMERA)
+        Quaternion relativeRotation = Quaternion.Inverse(playerCamera.transform.rotation) * transform.rotation;
+        Vector3 relativeEulerAngles = relativeRotation.eulerAngles;
+        if (relativeEulerAngles.y > 180f) {relativeEulerAngles.y -= 360f;}
+
+        if (relativeEulerAngles.y > 0) {facingForward = true;}
+        else {facingForward = false;}
+        
+
         Vector3 movement;
         Vector3 horizontalMove;
         Vector3 verticalMove;
@@ -328,16 +342,23 @@ public class PlayerController : NetworkBehaviour
         if (movement.magnitude > 0)
         {
             rb.MovePosition(rb.position + movement * speed * Time.deltaTime);
+
             if (grounded) {animator.SetBool("Moving",true);}
             if (!aiming) {transform.rotation = Quaternion.LookRotation(movement.normalized);} // && climbingStairs
 
-            if (horizontalInput < 0) {combatMoveDirection = -1;}
+            if (horizontalInput < 0) {movingForward = false;}
+            else {movingForward = true;}
         }
 
         else {animator.SetBool("Moving", false);} 
+
+        // True if movement aligns with orientation
+        bool oriented = facingForward == movingForward;
+        if (oriented) {facing = 1;}
+        else {facing = -1;}
     }
 
-    private void PlayerViewMovement()
+    private void PlayerViewMovement() // FIX THE DUMB STRAFE SYSTEM 
     {
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
@@ -357,6 +378,10 @@ public class PlayerController : NetworkBehaviour
         {
             rb.MovePosition(rb.position + movement * speed * Time.deltaTime);
 
+            if (verticalInput < 0 || horizontalInput < 0) {movingForward = false;}
+            else {movingForward = true;}
+
+
             // ANIMATION
             if (grounded) 
             {
@@ -375,7 +400,6 @@ public class PlayerController : NetworkBehaviour
                     animator.SetFloat("Strafe", 0);
                     animator.SetBool("Moving", true);
                     
-                    if (horizontalInput < 0) {combatMoveDirection = -1;}
                 }
             }
         }
@@ -386,6 +410,10 @@ public class PlayerController : NetworkBehaviour
             animator.SetFloat("Strafe", 0);
             animator.SetBool("Strafing",false);
         }
+
+        // Orientation
+        if (movingForward) {facing = 1;}
+        else {facing = -1;}
     }
 
     public void SetSpawn(Vector3 pos, Quaternion rot)
@@ -467,7 +495,7 @@ public class PlayerController : NetworkBehaviour
 
     private void AttackInputHandler()
     {
-        if (attacking && Time.time - lastAttack >= attackDuration) {attacking = false;} // END OF ATTACK
+        
 
         bool canAttack = !attacking && grounded && Time.time - lastAttack >= attackDuration;
 
@@ -480,6 +508,7 @@ public class PlayerController : NetworkBehaviour
                 canAttack = false;
                 lastAttack = Time.time;
                 attacking = true;
+                startHitbox = true;
 
                 attackDuration = punchAnimationDuration; 
                 attackHitboxStart = punchHitboxStart;
@@ -497,6 +526,7 @@ public class PlayerController : NetworkBehaviour
                 canAttack = false;
                 lastAttack = Time.time;
                 attacking = true;
+                startHitbox = true;
 
                 attackDuration = kickAnimationDuration; 
                 attackHitboxStart = kickHitboxStart;
@@ -515,6 +545,7 @@ public class PlayerController : NetworkBehaviour
                 canAttack = false;
                 lastAttack = Time.time;
                 attacking = true;
+                startHitbox = true;
 
                 attackDuration = headbuttAnimationDuration; 
                 attackHitboxStart = headbuttHitboxStart;
@@ -528,14 +559,15 @@ public class PlayerController : NetworkBehaviour
         
     }
 
-    private void AttackHandler() // THIS IS BROKEN  !!!!!!!!!!!!!
+    private void AttackHandler()
     {
         float time = Time.time;
         // START ATTACK HITBOX
-        if (attacking && !attackStarted && time - lastAttack >= attackHitboxStart)
+        if (attacking && !attackStarted && startHitbox && time - lastAttack >= attackHitboxStart)
         {
             Debug.Log("Hitbox started"); // COMBAT DEBUG
             attackStarted = true;
+            startHitbox = false;
             if (punching) {playerCollider.TogglePunchColliders(true);}
             if (kicking) {playerCollider.ToggleKickColliders(true);}
             if (headbutting) {playerCollider.ToggleHeadbuttColliders(true);}
@@ -586,7 +618,7 @@ public class PlayerController : NetworkBehaviour
         if (blocking.Value)
         {
             speed = moveSpeed * blockMovementSpeedMultiplier;
-            animator.SetFloat("MoveSpeed",combatMoveDirection * blockMovementSpeedMultiplier);
+            animator.SetFloat("MoveSpeed",facing * blockMovementSpeedMultiplier);
         }
 
         else if (attacking)
@@ -595,7 +627,7 @@ public class PlayerController : NetworkBehaviour
             if (punching) 
             {
                 speed = moveSpeed * punchMoveSpeedModifier;
-                animator.SetFloat("MoveSpeed",combatMoveDirection * punchMoveSpeedModifier);
+                animator.SetFloat("MoveSpeed",facing * punchMoveSpeedModifier);
             }
 
             // Kicking
@@ -605,7 +637,7 @@ public class PlayerController : NetworkBehaviour
             else if (headbutting) 
             {
                 speed = moveSpeed * headbuttMoveSpeedModifier;
-                animator.SetFloat("MoveSpeed",combatMoveDirection * headbuttMoveSpeedModifier);
+                animator.SetFloat("MoveSpeed",facing * headbuttMoveSpeedModifier);
             }
         }
         
@@ -613,7 +645,7 @@ public class PlayerController : NetworkBehaviour
         else if (aiming) 
         {
             speed = moveSpeed * aimMovementSpeedMultiplier;
-            animator.SetFloat("MoveSpeed",combatMoveDirection * aimMovementSpeedMultiplier);
+            animator.SetFloat("MoveSpeed",facing * aimMovementSpeedMultiplier);
         }
             
         // Regular movement
