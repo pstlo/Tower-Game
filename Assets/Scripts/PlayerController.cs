@@ -12,6 +12,11 @@ public class PlayerController : NetworkBehaviour
     
     // MOVEMENT
     [SerializeField] private float moveSpeed = 10f; 
+    [SerializeField] private float sprintMoveSpeedMultiplier = 1.25f; 
+    [SerializeField] private float sprintTime = 3000; // ms i think idk
+    [SerializeField] private float idleTimer = 15; 
+
+
     [SerializeField] private float jumpForce = 5f; 
 
     // COMBAT
@@ -91,7 +96,9 @@ public class PlayerController : NetworkBehaviour
     // private bool climbingStairs = true; // to do
     public NetworkVariable<bool> blocking = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
-
+    private bool sprinting;
+    private float sprintMeter;
+    private float timeToIdle = 0f;
 
     void Start()
     {
@@ -148,11 +155,10 @@ public class PlayerController : NetworkBehaviour
         if (!paused && GameManager.Instance.CanMove()) 
         {
 
-            JumpHandler();   
+            JumpHandler();  
+            SprintHandler(); 
             CombatHandler();
             
-
-
             if (!towerView) // MOUSE LOOK
             {
                 float mouseX = Input.GetAxis("Mouse X") * playerViewMouseSensitivity; 
@@ -163,7 +169,8 @@ public class PlayerController : NetworkBehaviour
         if (paused) 
         {
             animator.SetBool("Moving",false);
-            animator.SetBool("Strafing",false);
+            animator.SetBool("Sprinting",false);
+            sprinting = false;
         }
 
         // NAMETAG
@@ -188,7 +195,6 @@ public class PlayerController : NetworkBehaviour
             return;
         }
 
-        
         MoveSpeedHandler();
 
         if (!paused && GameManager.Instance.CanMove())
@@ -310,17 +316,26 @@ public class PlayerController : NetworkBehaviour
 
     private void MovementHandler()
     {
-        if (towerView) {TowerViewMovement();}
-        else {PlayerViewMovement();}
-    }
-
-    private void TowerViewMovement()
-    {
-        animator.SetBool("Strafing",false);
-
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
 
+        if (horizontalInput != 0 || verticalInput != 0) {timeToIdle = idleTimer;}
+        else {timeToIdle -= Time.deltaTime;}
+
+        if (timeToIdle <= 0) 
+        {
+            timeToIdle = 0;
+            // IDLE STARTS HERE !!!
+        }
+
+        // else {;} // IDLE ENDS HERE !!!
+
+        if (towerView) {TowerViewMovement(horizontalInput, verticalInput);}
+        else {PlayerViewMovement(horizontalInput, verticalInput);}
+    }
+
+    private void TowerViewMovement(float horizontalInput, float verticalInput)
+    {
         // ORIENTATION (RELATIVE TO CAMERA)
         Quaternion relativeRotation = Quaternion.Inverse(playerCamera.transform.rotation) * transform.rotation;
         Vector3 relativeEulerAngles = relativeRotation.eulerAngles;
@@ -348,9 +363,16 @@ public class PlayerController : NetworkBehaviour
 
             if (horizontalInput < 0) {movingForward = false;}
             else {movingForward = true;}
+
+            SprintInputHandler();
         }
 
-        else {animator.SetBool("Moving", false);} 
+        else 
+        {
+            animator.SetBool("Moving", false);
+            animator.SetBool("Sprinting", false);
+            sprinting = false;
+        } 
 
         // True if movement aligns with orientation
         bool oriented = facingForward == movingForward;
@@ -358,10 +380,12 @@ public class PlayerController : NetworkBehaviour
         else {facing = -1;}
     }
 
-    private void PlayerViewMovement() // FIX THE DUMB STRAFE SYSTEM 
+    private void PlayerViewMovement(float horizontalInput, float verticalInput) 
     {
-        float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
+        facing = 1;
+
+        animator.SetFloat("MoveX", horizontalInput);
+        animator.SetFloat("MoveY", verticalInput);
 
         Vector3 forward = transform.forward;
         Vector3 right = transform.right;
@@ -374,6 +398,7 @@ public class PlayerController : NetworkBehaviour
 
         Vector3 movement = (forward * verticalInput + right * horizontalInput).normalized;
 
+
         if (movement.magnitude > 0)
         {
             rb.MovePosition(rb.position + movement * speed * Time.deltaTime);
@@ -381,39 +406,19 @@ public class PlayerController : NetworkBehaviour
             if (verticalInput < 0 || horizontalInput < 0) {movingForward = false;}
             else {movingForward = true;}
 
-
             // ANIMATION
-            if (grounded) 
-            {
-                // STRAFING
-                if (verticalInput == 0) 
-                {
-                    animator.SetBool("Strafing", true);
-                    animator.SetFloat("Strafe", horizontalInput);
-                    animator.SetBool("Moving", false);
-                }
+            if (grounded) {animator.SetBool("Moving", true);}
 
-                // MOVING FORWARD (ISH)
-                else 
-                {
-                    animator.SetBool("Strafing",false);
-                    animator.SetFloat("Strafe", 0);
-                    animator.SetBool("Moving", true);
-                    
-                }
-            }
+            SprintInputHandler();
         }
         
         else 
         {
             animator.SetBool("Moving", false);
-            animator.SetFloat("Strafe", 0);
-            animator.SetBool("Strafing",false);
+            animator.SetBool("Sprinting", false);
+            sprinting = false;
         }
 
-        // Orientation
-        if (movingForward) {facing = 1;}
-        else {facing = -1;}
     }
 
     public void SetSpawn(Vector3 pos, Quaternion rot)
@@ -492,11 +497,39 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
+    private void SprintInputHandler()
+    {
+        // Sprint input
+        if (grounded && !attacking && Input.GetKey(KeyCode.LeftShift)) {sprinting = true;}
+        else {sprinting = false;}
+    }
+
+    private void SprintHandler()
+    {
+        // Sprint cooldown
+        if (sprinting) 
+        {
+            if (sprintMeter - Time.deltaTime > 0) {sprintMeter -= Time.deltaTime;}
+            else 
+            {
+                sprintMeter = 0;
+                sprinting = false;
+            }
+        }
+
+        // Replenish
+        if (!sprinting)
+        {
+            sprintMeter += Time.deltaTime;
+            sprintMeter = Mathf.Min(sprintMeter, sprintTime);
+        }
+        
+        animator.SetBool("Sprinting", sprinting);
+    }
+
 
     private void AttackInputHandler()
     {
-        
-
         bool canAttack = !attacking && grounded && Time.time - lastAttack >= attackDuration;
 
         if (!Input.GetKeyDown(KeyCode.C))
@@ -516,7 +549,7 @@ public class PlayerController : NetworkBehaviour
 
                 animator.SetTrigger("Punch"); 
 
-                Debug.Log("Started punch"); // COMBAT DEBUG
+                // Debug.Log("Started punch"); // COMBAT DEBUG
             }   
 
             // KICK
@@ -535,7 +568,7 @@ public class PlayerController : NetworkBehaviour
                 animator.SetTrigger("Kick");
                 animator.SetLayerWeight(2,0f);
 
-                Debug.Log("Started kick"); // COMBAT DEBUG
+                // Debug.Log("Started kick"); // COMBAT DEBUG
             }
 
             // HEADBUTT
@@ -553,19 +586,19 @@ public class PlayerController : NetworkBehaviour
 
                 animator.SetTrigger("Headbutt");
 
-                Debug.Log("Started headbutt"); // COMBAT DEBUG
+                // Debug.Log("Started headbutt"); // COMBAT DEBUG
             }
         }
-        
     }
 
     private void AttackHandler()
     {
         float time = Time.time;
+
         // START ATTACK HITBOX
         if (attacking && !attackStarted && startHitbox && time - lastAttack >= attackHitboxStart)
         {
-            Debug.Log("Hitbox started"); // COMBAT DEBUG
+            // Debug.Log("Hitbox started"); // COMBAT DEBUG
             attackStarted = true;
             startHitbox = false;
             if (punching) {playerCollider.TogglePunchColliders(true);}
@@ -588,7 +621,6 @@ public class PlayerController : NetworkBehaviour
             {
                 playerCollider.ToggleKickColliders(false);
                 kicking = false;
-                
             }
 
             if (headbutting) 
@@ -597,14 +629,14 @@ public class PlayerController : NetworkBehaviour
                 headbutting = false;
             }
 
-            Debug.Log("Hitbox ended"); // COMBAT DEBUG
+            // Debug.Log("Hitbox ended"); // COMBAT DEBUG
         }
 
         // END ATTACK
         if (attacking && time - lastAttack >= attackDuration) 
         {
             attacking = false;
-            Debug.Log("Attack ended"); // COMBAT DEBUG
+            // Debug.Log("Attack ended"); // COMBAT DEBUG
         }
 
         if (!attacking) {animator.SetLayerWeight(2,1f);}
@@ -651,7 +683,8 @@ public class PlayerController : NetworkBehaviour
         // Regular movement
         else 
         {
-            speed = moveSpeed;
+            if (sprinting) {speed = sprintMoveSpeedMultiplier * moveSpeed;}
+            else {speed = moveSpeed;}
             animator.SetFloat("MoveSpeed",1f);
         }
         
@@ -666,6 +699,8 @@ public class PlayerController : NetworkBehaviour
             playerCamera.SetTowerView(towerView);
             UIManager.Instance.ToggleTowerIndicatorMode(towerView);
         }
+
+        animator.SetBool("TowerView",towerView);
     }
 
     private void DisableColliders()
