@@ -2935,6 +2935,33 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 7115184589233178823, guid: 0f830ede18fec69459fd12699630ac27, type: 3}
   m_PrefabInstance: {fileID: 6477413242845371256}
   m_PrefabAsset: {fileID: 0}
+--- !u!54 &849322873
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 849322867}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 126
+  m_CollisionDetection: 1
 --- !u!1 &856181529
 GameObject:
   m_ObjectHideFlags: 0
@@ -8006,6 +8033,10 @@ PrefabInstance:
       propertyPath: m_Convex
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5334691458829893902, guid: 0f830ede18fec69459fd12699630ac27, type: 3}
+      propertyPath: m_ProvidesContacts
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6495674483639905249, guid: 0f830ede18fec69459fd12699630ac27, type: 3}
       propertyPath: m_LocalScale.y
       value: 37
@@ -8069,7 +8100,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7115184589233178823, guid: 0f830ede18fec69459fd12699630ac27, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 849322873}
   m_SourcePrefab: {fileID: 100100000, guid: 0f830ede18fec69459fd12699630ac27, type: 3}
 --- !u!54 &6750874976377905821
 Rigidbody:

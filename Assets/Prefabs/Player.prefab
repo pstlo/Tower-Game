@@ -863,6 +863,9 @@ MonoBehaviour:
   playerCameraPrefab: {fileID: 7339340220471245583, guid: d2f89f86c6109ce4dab7ea859cf81143, type: 3}
   playerNameText: {fileID: 9051704066542013851}
   moveSpeed: 10
+  sprintMoveSpeedMultiplier: 1.25
+  sprintTime: 3000
+  idleTimer: 100
   jumpForce: 5
   punchForce: 6
   kickForce: 8
