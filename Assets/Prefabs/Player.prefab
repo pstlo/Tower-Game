@@ -632,7 +632,9 @@ GameObject:
   - component: {fileID: -7706340638169153520}
   - component: {fileID: 3752457594142669301}
   - component: {fileID: 5338728240064602717}
-  - component: {fileID: -6210540476501608943}
+  - component: {fileID: 6953627188943348423}
+  - component: {fileID: 2004541019373897086}
+  - component: {fileID: 2829155412828034497}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -696,7 +698,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 2103378795
+  GlobalObjectIdHash: 4286597678
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -788,6 +790,13 @@ MonoBehaviour:
     DestinationState: -1859720286
     TransitionDuration: 0.25
     TriggerNameHash: 125937960
+    TransitionIndex: 0
+  - IsCrossFadeExit: 0
+    Layer: 2
+    OriginatingState: 812430040
+    DestinationState: -1859720286
+    TransitionDuration: 0.25
+    TriggerNameHash: 125937960
     TransitionIndex: 1
   - IsCrossFadeExit: 0
     Layer: 2
@@ -795,14 +804,7 @@ MonoBehaviour:
     DestinationState: -1859720286
     TransitionDuration: 0.25
     TriggerNameHash: 125937960
-    TransitionIndex: 1
-  - IsCrossFadeExit: 0
-    Layer: 2
-    OriginatingState: 1182977971
-    DestinationState: -1859720286
-    TransitionDuration: 0.25
-    TriggerNameHash: 125937960
-    TransitionIndex: 1
+    TransitionIndex: 2
   - IsCrossFadeExit: 0
     Layer: 3
     OriginatingState: 753088835
@@ -874,14 +876,14 @@ MonoBehaviour:
   kickMoveSpeedModifier: 0
   headbuttMoveSpeedModifier: 0.75
   punchHitboxStart: 0.2
-  punchHitboxEnd: 0.75
+  punchHitboxEnd: 0.6
   punchAnimationDuration: 0.76
   kickAnimationDuration: 1.7
-  kickHitboxStart: 0.4
+  kickHitboxStart: 0.5
   kickHitboxEnd: 0.8
-  headbuttAnimationDuration: 1.7
-  headbuttHitboxStart: 0.8
-  headbuttHitboxEnd: 1
+  headbuttAnimationDuration: 1.5
+  headbuttHitboxStart: 0.7
+  headbuttHitboxEnd: 0.9
   blockMovementSpeedMultiplier: 0.25
   aimSensitivity: 3000
   aimMovementSpeedMultiplier: 0.75
@@ -909,7 +911,7 @@ MonoBehaviour:
   rightLeg: {fileID: 1997887205064048892}
   leftLeg: {fileID: 3871569317185398447}
   noggin: {fileID: 3338759659123746092}
---- !u!136 &-6210540476501608943
+--- !u!136 &6953627188943348423
 CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -932,6 +934,52 @@ CapsuleCollider:
   m_Height: 2.2
   m_Direction: 1
   m_Center: {x: 0, y: 0.12, z: 0}
+--- !u!136 &2004541019373897086
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3288098732901890965}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.1
+  m_Height: 0.7
+  m_Direction: 1
+  m_Center: {x: 0.4, y: 0.2, z: 0}
+--- !u!136 &2829155412828034497
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3288098732901890965}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.1
+  m_Height: 0.7
+  m_Direction: 1
+  m_Center: {x: -0.4, y: 0.2, z: 0}
 --- !u!1 &3305057755091655512
 GameObject:
   m_ObjectHideFlags: 0

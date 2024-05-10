@@ -13,7 +13,7 @@ public class PlayerController : NetworkBehaviour
     // MOVEMENT
     [SerializeField] private float moveSpeed = 10f; 
     [SerializeField] private float sprintMoveSpeedMultiplier = 1.25f; 
-    [SerializeField] private float sprintTime = 3000; // ms i think idk
+    [SerializeField] private float sprintTime = 7;
     [SerializeField] private float idleTimer = 15; 
 
 
@@ -325,10 +325,10 @@ public class PlayerController : NetworkBehaviour
         if (timeToIdle <= 0) 
         {
             timeToIdle = 0;
-            // IDLE STARTS HERE !!!
+            animator.SetBool("Idle", true); // Start idle
         }
 
-        // else {;} // IDLE ENDS HERE !!!
+        else {animator.SetBool("Idle", false);} // End idle
 
         if (towerView) {TowerViewMovement(horizontalInput, verticalInput);}
         else {PlayerViewMovement(horizontalInput, verticalInput);}
@@ -338,13 +338,12 @@ public class PlayerController : NetworkBehaviour
     {
         // ORIENTATION (RELATIVE TO CAMERA)
         Quaternion relativeRotation = Quaternion.Inverse(playerCamera.transform.rotation) * transform.rotation;
-        Vector3 relativeEulerAngles = relativeRotation.eulerAngles;
-        if (relativeEulerAngles.y > 180f) {relativeEulerAngles.y -= 360f;}
+        Vector3 relativeAngles = relativeRotation.eulerAngles;
+        if (relativeAngles.y > 180f) {relativeAngles.y -= 360f;}
 
-        if (relativeEulerAngles.y > 0) {facingForward = true;}
+        if (relativeAngles.y > 0) {facingForward = true;}
         else {facingForward = false;}
-        
-
+    
         Vector3 movement;
         Vector3 horizontalMove;
         Vector3 verticalMove;
@@ -404,12 +403,13 @@ public class PlayerController : NetworkBehaviour
             rb.MovePosition(rb.position + movement * speed * Time.deltaTime);
 
             if (verticalInput < 0 || horizontalInput < 0) {movingForward = false;}
-            else {movingForward = true;}
+            else 
+            {
+                movingForward = true;
+                if (verticalInput == 1 && horizontalInput == 0) {SprintInputHandler();}
+            }
 
-            // ANIMATION
             if (grounded) {animator.SetBool("Moving", true);}
-
-            SprintInputHandler();
         }
         
         else 

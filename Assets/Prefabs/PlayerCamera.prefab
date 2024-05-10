@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 8720700665739808264}
   - component: {fileID: 3178561076367795834}
-  - component: {fileID: 414153600500338544}
   - component: {fileID: 2896535982512576939}
   m_Layer: 0
   m_Name: PlayerCamera
@@ -44,7 +43,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 1, g: 1, b: 1, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -85,14 +84,6 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!81 &414153600500338544
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7339340220471245583}
-  m_Enabled: 0
 --- !u!114 &2896535982512576939
 MonoBehaviour:
   m_ObjectHideFlags: 0
