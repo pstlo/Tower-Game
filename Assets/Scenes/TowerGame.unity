@@ -2376,13 +2376,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 705507993}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 0, y: 0, z: 9}
+  m_LocalRotation: {x: 0, y: 0.9824504, z: -0.186524, w: 0}
+  m_LocalPosition: {x: 0, y: 51.3, z: 95.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
+  m_LocalEulerAnglesHint: {x: 21.5, y: 180, z: 0}
 --- !u!1 &734138122
 GameObject:
   m_ObjectHideFlags: 0
@@ -3863,13 +3863,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.2836763, y: -0, z: -0, w: 0.9589201}
-  m_LocalPosition: {x: -15.43, y: 47.6, z: -59.5}
+  m_LocalRotation: {x: 0.14367364, y: -0, z: -0, w: 0.98962516}
+  m_LocalPosition: {x: -15.43, y: 40.6, z: -64.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 32.96, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 16.521, y: 0, z: 0}
 --- !u!1 &1081580634
 GameObject:
   m_ObjectHideFlags: 0
@@ -5967,7 +5967,7 @@ TerrainCollider:
     m_Bits: 0
   m_LayerOverridePriority: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_TerrainData: {fileID: 15600000, guid: 85f55c328e6295c4b91fb77cafd5550f, type: 2}
   m_EnableTreeColliders: 1
